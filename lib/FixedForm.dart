@@ -242,18 +242,14 @@ void _onDropdownChange(String country, String city) {
                     final int startAge = int.tryParse(_ageController.text) ?? 0;
                     final String taxPercent = selectedPercent ?? '0';
 
-                    final htmlContent = generateInsuranceHtml(
+                    final pdfBytes = await generateInsurancePdfWeb(
                       startAge: startAge, 
                       selectedTaxPercent: taxPercent
                     );
-
-                    final outputDir = await getTemporaryDirectory();
-                    final pdfFile = await FlutterHtmlToPdf.convertFromHtmlContent(
-                      htmlContent, 
-                      outputDir.path, 
-                      "insurance_summary"
+                    await Printing.layoutPdf(
+                      onLayout: (format) async => pdfBytes,
+                      name: 'insurance_summary.pdf',
                     );
-                    await OpenFile.open(pdfFile.path);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black87,
