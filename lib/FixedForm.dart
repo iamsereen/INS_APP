@@ -63,24 +63,6 @@ class _FixedFormTabState extends State<FixedFormTab> with AutomaticKeepAliveClie
     }
   }
 
-  /*void _exportData() async {
-    final pdfData = await generatePDF(
-      dynamicFields: _dynamicFields.map((field) => {
-        'label' : (field['label'] ?? '').toString(),
-        'value': field['controller'].text.toString(),
-      }).toList(), 
-      gender: _selectedGender, 
-      age: _ageController.text, 
-      careerStep: _selectedNumber, 
-      cascading1: selectedKind, 
-      cascading2: selectedOpt, 
-      dropdown1: selectedOption1, 
-      dropdown2: selectedOption2, 
-      percent: selectedPercent?.toString(),
-      );
-      await Printing.layoutPdf(onLayout: (format) async => pdfData);
-  }*/
-
   Future<void> _handleAddField() async {
   final result = await showAddFieldDialog(context);
   if (result != null) {
@@ -102,7 +84,6 @@ void _handlePercentChanged(String? newValue) {
       setState(() {
         selectedPercent = newValue;
       });
-      print('Selected Tax Percent: $selectedPercent'); // ตรวจสอบค่าที่รับมา
     }
 }
 
