@@ -245,7 +245,14 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
 }
 
 class PercentDropdown extends StatefulWidget {
-  const PercentDropdown({super.key});
+  final ValueChanged<String?> onChanged;
+  final String? initialValue;
+
+  const PercentDropdown({
+    Key? key,
+    required this.onChanged,
+    this.initialValue,
+  }) : super(key: key);
 
   @override
   State<PercentDropdown> createState() => _PercentDropdownState();
@@ -253,7 +260,13 @@ class PercentDropdown extends StatefulWidget {
 
 class _PercentDropdownState extends State<PercentDropdown> {
   String? selectedPercent;
-
+  
+  @override
+  void initState() {
+    super.initState();
+    selectedPercent = widget.initialValue;
+  }
+  
   final List<String> percentOptions = List.generate(
     8,
     (index) => '${index * 5}%',
@@ -275,6 +288,7 @@ class _PercentDropdownState extends State<PercentDropdown> {
         setState(() {
           selectedPercent = value;
         });
+        widget.onChanged(value);
       },
     );
   }

@@ -83,8 +83,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 
 Future<pw.Font> _loadFont(String path) async {
-  final fontData = await rootBundle.load(path);
-  return pw.Font.ttf(fontData);
+final fontData = await rootBundle.load(path);
+return pw.Font.ttf(fontData);
 }
 
 Future<Uint8List> generateInsurancePdfWeb({
@@ -97,7 +97,7 @@ Future<Uint8List> generateInsurancePdfWeb({
   int currentAge = startAge;
 
   final headers = [
-    'สิ้นปีที่',
+    'สิ้นปีกธ.',
     'อายุ',
     'เบี้ยประกัน',
     'ภาษี',
@@ -114,7 +114,7 @@ Future<Uint8List> generateInsurancePdfWeb({
       '$currentYear',
       '$currentAge',
       '',
-      '$selectedTaxPercent%',
+      '$selectedTaxPercent',
       '',
       '',
       '',
@@ -140,15 +140,18 @@ Future<Uint8List> generateInsurancePdfWeb({
                 ),
               ),
               pw.SizedBox(height: 16),
-              pw.TableHelper.fromTextArray(
+              pw.Flexible(
+              child: pw.Table.fromTextArray(
                 headers: headers,
                 data: data,
-                headerStyle: pw.TextStyle(font: font),
+                headerStyle: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
                 headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
                 cellAlignment: pw.Alignment.center,
+                cellStyle: pw.TextStyle(font: font),
                 border: pw.TableBorder.all(),
                 cellPadding: const pw.EdgeInsets.all(4),
               ),
+          ),
             ],
           ),
         );

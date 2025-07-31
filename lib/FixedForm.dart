@@ -97,6 +97,17 @@ void _onDropdownChange(String country, String city) {
     });
   }
 
+void _handlePercentChanged(String? newValue) {
+    if (newValue != null) {
+      setState(() {
+        selectedPercent = newValue;
+      });
+      print('Selected Tax Percent: $selectedPercent'); // ตรวจสอบค่าที่รับมา
+    }
+}
+
+
+
   
 
   @override
@@ -219,7 +230,10 @@ void _onDropdownChange(String country, String city) {
       
           const SizedBox(height: 16),
       
-          PercentDropdown(),
+          PercentDropdown(
+            onChanged: _handlePercentChanged,
+            initialValue: selectedPercent,
+          ),
         
           const SizedBox(height: 32),
         
