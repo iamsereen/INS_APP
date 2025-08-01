@@ -222,7 +222,7 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
             SizedBox(
               width: 212,
               child: TextField(
-                controller: widget.controller, // 👈 ใช้ controller จากข้างนอก
+                controller: widget.controller, 
                 decoration: const InputDecoration(
                   labelText: 'ระบุค่าเพิ่มเติม',
                   border: OutlineInputBorder(),

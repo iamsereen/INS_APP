@@ -37,6 +37,8 @@ class _FixedFormTabState extends State<FixedFormTab> with AutomaticKeepAliveClie
   String? selectedOption1;
   String? selectedOption2;
   String? selectedPercent;
+  String _selectedInsuranceKind = '';
+  String _selectedInsuranceOpt = '';
 
 
   // Dropdown
@@ -72,12 +74,12 @@ class _FixedFormTabState extends State<FixedFormTab> with AutomaticKeepAliveClie
   }
 }
 
-void _onDropdownChange(String country, String city) {
+/*void _onDropdownChange(String country, String city) {
     setState(() {
       selectedKind = country;
       selectedOpt = city;
     });
-  }
+  }*/
 
 void _handlePercentChanged(String? newValue) {
     if (newValue != null) {
@@ -200,7 +202,16 @@ void _handlePercentChanged(String? newValue) {
           ), 
           const SizedBox(height: 16),
       
-          CascadingDropdown(onSelectionChanged: _onDropdownChange),
+          //CascadingDropdown(onSelectionChanged: _onDropdownChange),
+          CascadingDropdown(
+            onSelectionChanged: (kind, type) {
+              setState(() {
+                selectedKind = kind;
+                selectedOpt = type;
+              });
+            },
+          ),
+
       
           const SizedBox(height: 16),
           // Dropdown
@@ -236,10 +247,13 @@ void _handlePercentChanged(String? newValue) {
                   onPressed: () async {
                     final int startAge = int.tryParse(_ageController.text) ?? 0;
                     final String taxPercent = selectedPercent ?? '0';
+                    
 
                     final pdfBytes = await generateInsurancePdfWeb(
                       startAge: startAge, 
-                      selectedTaxPercent: taxPercent
+                      selectedTaxPercent: taxPercent, 
+                      insuranceType: selectedOpt!, 
+                      gender: _selectedGender ?? '',
                     );
                     await Printing.layoutPdf(
                       onLayout: (format) async => pdfBytes,
