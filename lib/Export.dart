@@ -139,8 +139,13 @@ Future<Uint8List> generateInsurancePdfWeb({
           pw.Table(
             border: pw.TableBorder.all(),
             columnWidths: {
-              0: pw.FlexColumnWidth(8),
-              for (int i = 0; i < 8; i++) i: pw.FlexColumnWidth(1),
+              0: const pw.FlexColumnWidth(1), // สิ้นปีกธ.
+              1: const pw.FlexColumnWidth(1), // อายุ
+              2: const pw.FlexColumnWidth(2), // เบี้ยประกัน
+              3: const pw.FlexColumnWidth(2), // เงินคืน ภาษี
+              4: const pw.FlexColumnWidth(2), // เบี้ยสะสม
+              5: const pw.FlexColumnWidth(2), // มูลค่าเวนคืน
+              6: const pw.FlexColumnWidth(2),
             },
             children: tableRows,
           ),
@@ -151,7 +156,7 @@ Future<Uint8List> generateInsurancePdfWeb({
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: {
-                  0: pw.FixedColumnWidth(6),
+                  0: pw.FixedColumnWidth(5),
                   1: pw.FixedColumnWidth(2),
                 },
                 children: [
@@ -246,6 +251,3 @@ Future<Uint8List> generateInsurancePdfWeb({
   );
   return pdf.save();
 }
-
-
-
