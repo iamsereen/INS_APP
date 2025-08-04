@@ -1,39 +1,49 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:ins_application/user_model.dart';
-import 'HomePage.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart'; // ใช้แค่ Mobile
+import 'package:path_provider/path_provider.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
+import 'dart:io';
+
+import 'user_model.dart';
 import 'Login.dart';
+import 'dart:html' as html;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  Uint8List encryptionKey;
+
+  // ลงทะเบียน Adapter
+  Hive.registerAdapter(UserAdapter());
+
   if (kIsWeb) {
-    // สำหรับ Web ใช้ HiveFlutter ซึ่งไม่ต้องระบุ path
     await Hive.initFlutter();
 
-    // สร้าง key สำหรับ web (อาจเก็บใน localStorage หรือ generate ใหม่ทุกครั้งก็ได้)
-    final encryptionKey = Uint8List.fromList(Hive.generateSecureKey());
+    final savedKey = html.window.localStorage['encryptionKey'];
+    if (savedKey != null) {
+      encryptionKey = base64Decode(savedKey);
+    } else {
+      encryptionKey = Uint8List.fromList(Hive.generateSecureKey());
+      html.window.localStorage['encryptionKey'] = base64Encode(encryptionKey);
+    }
 
-    Hive.registerAdapter(UserAdapter());
+    // เปิดกล่องสำหรับ Web
     await Hive.openBox<User>(
       'users',
       encryptionCipher: HiveAesCipher(encryptionKey),
     );
+
+    debugPrint('Web: เปิดกล่อง users แล้ว (${Hive.box<User>('users').length} users)');
+
   } else {
-    // สำหรับ Android / iOS
     final appDocDir = await getApplicationDocumentsDirectory();
     Hive.init(appDocDir.path);
-    Hive.registerAdapter(UserAdapter());
 
     final keyFile = File('${appDocDir.path}/encryption.key');
-    Uint8List encryptionKey;
 
     if (await keyFile.exists()) {
       encryptionKey = await keyFile.readAsBytes();
@@ -46,6 +56,28 @@ void main() async {
       'users',
       encryptionCipher: HiveAesCipher(encryptionKey),
     );
+
+    debugPrint('Mobile: เปิดกล่อง users แล้ว (${Hive.box<User>('users').length} users)');
+  }
+
+  // เพิ่มแอดมินถ้ายังไม่มี
+  final userBox = Hive.box<User>('users');
+  const defaultUsername = 'admin';
+  const defaultPassword = 'admin123';
+
+  final exists = userBox.values.any((u) => u.username == defaultUsername);
+
+  if (!exists) {
+    final admin = User(
+      username: defaultUsername,
+      passwordHash: sha256.convert(utf8.encode(defaultPassword)).toString(),
+      role: 'admin',
+      PlainPassword: defaultPassword,
+    );
+    await userBox.add(admin);
+    debugPrint('✅ สร้างแอดมิน admin / admin123 แล้ว');
+  } else {
+    debugPrint('ℹ️ พบแอดมินแล้วในระบบ');
   }
 
   runApp(const MyApp());
@@ -57,13 +89,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'INS App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: LoginScreen(),
       debugShowCheckedModeBanner: false,
+      home: const LoginScreen(),
     );
   }
 }
