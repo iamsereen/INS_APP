@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:convert';
+import 'HomePage.dart';
 import 'user_model.dart';
 import 'Login.dart'; // กลับไปหน้า login
 
@@ -25,12 +26,10 @@ class _AdminPageState extends State<AdminPage> {
     final password = passwordCtrl.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      _showDialog('กรุณากรอกข้อมูลให้ครบ');
       return;
     }
 
     if (userBox.values.any((u) => u.username == username)) {
-      _showDialog('มีผู้ใช้นี้อยู่แล้ว');
       return;
     }
 
@@ -38,11 +37,11 @@ class _AdminPageState extends State<AdminPage> {
     final user = User(username: username, passwordHash: passwordHash, role: selectedRole, PlainPassword: password,);
     
     await userBox.add(user);
+    Navigator.pop(context);
 
     usernameCtrl.clear();
     passwordCtrl.clear();
 
-    _showDialog('เพิ่มผู้ใช้สำเร็จ');
   }
 
   Future<void> _deleteUser(int index) async {
@@ -108,6 +107,61 @@ class _AdminPageState extends State<AdminPage> {
   );
 }
 
+void _showAddUserDialog() {
+
+  showDialog(
+    context: context,
+    builder: (_) {
+      return StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('เพิ่มผู้ใช้ใหม่'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: usernameCtrl,
+                    decoration: const InputDecoration(labelText: 'Username'),
+                  ),
+                  TextField(
+                    controller: passwordCtrl,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                  ),
+                  DropdownButton<String>(
+                    value: selectedRole,
+                    items: const [
+                      DropdownMenuItem(value: 'user', child: Text('User')),
+                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => selectedRole = val);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('ยกเลิก'),
+              ),
+              ElevatedButton(
+                onPressed: _addUser,
+                child: const Text('เพิ่มผู้ใช้'),
+              ),
+            ],
+          );
+        },
+        ); 
+},
+  );
+}
+
+
   @override
   Widget build(BuildContext context) {
     final userBox = Hive.box<User>('users');
@@ -116,6 +170,33 @@ class _AdminPageState extends State<AdminPage> {
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const HomePage()),
+              );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color.fromARGB(255, 0, 0, 0), // สีข้อความ
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20), // ขอบมน
+                side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: const Text(
+              'หน้าหลัก',
+              style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+            ),
+          ),
+          SizedBox(width: 10,),
+          IconButton(
+            icon: const Icon(Icons.add_box),
+            tooltip: 'เพิ่มผู้ใช้ใหม่',
+            onPressed: _showAddUserDialog,
+          ),
+          SizedBox(width: 10,),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -124,42 +205,26 @@ class _AdminPageState extends State<AdminPage> {
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
               );
             },
-          )
+          ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('เพิ่มผู้ใช้ใหม่', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            TextField(
-              controller: usernameCtrl,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              controller: passwordCtrl,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            DropdownButton<String>(
-              value: selectedRole,
-              items: const [
-                DropdownMenuItem(value: 'user', child: Text('User')),
-                DropdownMenuItem(value: 'admin', child: Text('Admin')),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => selectedRole = val);
-                }
+            ValueListenableBuilder(
+              valueListenable: userBox.listenable(),
+              builder: (context, Box<User> box, _) {
+                final count = box.length;
+                return Text(
+                  'จำนวนบัญชีผู้ใช้ $count',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                );
               },
             ),
+
             const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _addUser,
-              child: const Text('เพิ่มผู้ใช้'),
-            ),
-            const SizedBox(height: 20),
-            const Text('รายการผู้ใช้', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Expanded(
               child: ValueListenableBuilder(
                 valueListenable: userBox.listenable(),
@@ -172,12 +237,12 @@ class _AdminPageState extends State<AdminPage> {
                       final user = users[index];
                       return Card(
                         child: ListTile(
-                          title: Text(user.username),
+                          title: Text('Username: ${user.username}'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Role: ${user.role}'),
                               Text('Password: ${user.PlainPassword ?? "(ไม่พบรหัสผ่าน)"}'),
+                              Text('Role: ${user.role}'),
                             ],
                           ),
                           trailing: user.role == 'admin'

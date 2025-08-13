@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
 
+import 'Admin.dart';
 import 'user_model.dart';
 import 'Login.dart';
 import 'dart:html' as html;
@@ -95,7 +96,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const LoginScreen(),
+      home: const AdminPage(),
     );
   }
 }
