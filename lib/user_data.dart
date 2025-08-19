@@ -16,14 +16,30 @@ class UserData {
   int? age;
   InsuranceData? selectedInsurance;
   double? premiumAmount;
+  double? Amount;//ทุนประกันดิบ
   InsurancePlan? selectedProduct;
   String? selectedCode;
   InsurancePlan? selectedPlan;
+  List<double> dataValues = [];
+  List<double> surrenderValues = [];
+  List<double> accumulatedPremiums = []; 
   final TextEditingController premiumController = TextEditingController();
   
   void updatePremium(double value) {
     premiumAmount = value;
     premiumController.text = value.toStringAsFixed(2);
+  }
+
+  void updateDataValues(List<double> newData) {
+    dataValues = newData;
+  }
+
+  void updateSurrenderValues(List<double> newValues) {
+    surrenderValues = newValues;
+  }
+
+  void updateAccumulatedPremiums(List<double> newValues) {
+    accumulatedPremiums = newValues;
   }
 
   void updateData({String? newGender, int? newAge, InsuranceData? newInsurance, double? newPremiumAmount, InsurancePlan? newProduct,InsurancePlan? newPlan,

@@ -9,6 +9,7 @@ class InsurancePlan {
   final Coverage coverage;
   final List<Rate> rates;
   final int endage;
+  final int untilyear;
 
   InsurancePlan({
     required this.code,
@@ -17,6 +18,7 @@ class InsurancePlan {
     required this.coverage,
     required this.rates,
     required this.endage,
+    required this.untilyear
   });
 
   factory InsurancePlan.fromJson(String code, Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class InsurancePlan {
       code: code,
       minIns: json['minIns'] ?? 0,
       endage: json['endage'] ?? 0,
+      untilyear: json['untilyear'] ?? 0,
       discounts: (json['discounts'] as List? ?? [])
           .map((e) => Discount.fromJson(e))
           .toList(),
@@ -219,23 +222,122 @@ void computeInsurancePremium({
   calculatePremium(data);
 }
 
-void computeAccumulatedPremium({
+List<double> computeAccumulatedPremium({
   required InsurancePlan plan,
   required UserData userData,
   required double annualPremium, // ค่าเบี้ยรวมต่อปี
 }) {
+  // ถ้า age เป็น null ให้คืน list ว่าง
   if (userData.age == null) {
-    return;
+    return [];
   }
 
   int currentAge = userData.age!;
-  int endAge = plan.endage ?? (currentAge + 20); // สมมติถ้า JSON ไม่มี endAge กำหนด default
+  int untilYear = plan.untilyear; // จำนวนปีที่ต้องคำนวณจาก json
   double accumulated = 0.0;
+  List<double> accumulatedList = [];
 
-  for (int age = currentAge + 1; age <= endAge; age++) {
+  for (int year = 1; year <= untilYear; year++) {
     accumulated += annualPremium;
-    print('อายุ $age = ${accumulated.toStringAsFixed(2)}');
+    accumulatedList.add(accumulated);
+    print('ปีที่ $year (อายุ ${currentAge + year}) = ${accumulated.toStringAsFixed(0)}');
+  }
+
+  return accumulatedList;
+}
+
+
+Future<Map<String, dynamic>> loadJsonMapForPolicy(String filename) async {
+  final String response = await rootBundle.loadString('assets/json/$filename.json');
+  final Map<String, dynamic> data = json.decode(response);
+  return data; // คืนเป็น Map<String, dynamic> ดิบ
+}
+
+
+List<double> getAllPolicyData({
+  required Map<String, dynamic> jsonData,
+  required String gender,
+  required int age,
+  required String productCode,
+  required int endAge,
+}) {
+  final productData = jsonData['products'][productCode];
+  if (productData == null) {
+    print('ไม่พบรหัสประกัน $productCode');
+    return [];
+  }
+
+  final List<dynamic>? genderList = productData[gender];
+  if (genderList == null || genderList.isEmpty) {
+    print('ไม่พบข้อมูลเพศ $gender ในรหัส $productCode');
+    return [];
+  }
+
+  final Map<String, dynamic>? ageData = genderList.firstWhere(
+    (element) => element['age'] == age,
+    orElse: () => null,
+  );
+
+  if (ageData == null) {
+    print('ไม่พบข้อมูลอายุ $age สำหรับเพศ $gender ในรหัส $productCode');
+    return [];
+  }
+
+  List<dynamic> rowData = ageData['data'] ?? [];
+  List<double> fullData = rowData.map((e) => (e as num?)?.toDouble() ?? 0.0).toList();
+
+  // คำนวณจำนวนปีที่เหลือ
+  int remainingYears = endAge - age;
+  if (remainingYears <= 0) remainingYears = 1; // อย่างน้อยเก็บค่า 1 ค่า
+
+  // ตัดช่วง data ให้เท่ากับ remainingYears
+  // กระจายค่าเท่ากันจาก fullData
+  List<double> results = [];
+  int step = (fullData.length / remainingYears).ceil();
+  for (int i = 0; i < remainingYears; i++) {
+    int idx = i * step;
+    if (idx >= fullData.length) idx = fullData.length - 1;
+    results.add(fullData[idx]);
+  }
+
+  print('เพศ: $gender, อายุ: $age, endAge: $endAge -> data: $results');
+
+  return results;
+}
+
+
+class SurrenderValueCalculator {
+  final List<double> dataValues;
+  final double insuredAmount; // ใช้ทุนประกันจริง ไม่ใช่เบี้ย
+
+  SurrenderValueCalculator({
+    required this.dataValues,
+    required this.insuredAmount,
+  });
+
+  List<double> calculate() {
+    List<double> results = dataValues.map((value) {
+      if (value == 0) return 0.0;
+      return value * insuredAmount / 1000; // ใช้ทุนประกันจริง
+    }).toList();
+
+    // แสดงผลลัพธ์ในล็อก
+    print('--- มูลค่าเวนคืน ---');
+    for (int i = 0; i < results.length; i++) {
+      print('dataValues[$i]: ${dataValues[i]} -> SurrenderValue: ${results[i]}');
+    }
+    print('------------------');
+    UserData().updateSurrenderValues(results);
+    print('UserData.surrenderValues: ${UserData().surrenderValues}');
+
+    return results;
   }
 }
+
+
+
+
+
+
 
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ins_application/INS_CAL.dart';
 import 'package:ins_application/Plan.dart';
 import 'package:ins_application/user_data.dart';
 import 'package:pdf/pdf.dart';
@@ -274,62 +273,114 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
       selectedOption2 = null;
     }
     widget.controller.addListener(_updatePremiumAmount);
+    widget.controller.addListener(() {
+    // อ่านค่าที่ผู้ใช้กรอก
+    double? enteredAmount = double.tryParse(widget.controller.text);
+
+    // เก็บลง UserData
+    UserData().Amount = enteredAmount;
+
+    // ไม่คำนวณ anything ที่นี่
+    print('ทุนประกันที่ผู้ใช้กรอก: $enteredAmount');
+  });
   }
 
 
-  void _updatePremiumAmount() {
+  void _updatePremiumAmount() async {
   final double? amount = double.tryParse(widget.controller.text);
   _userData.updateData(newPremiumAmount: amount);
   final InsurancePlan? plan = _userData.selectedPlan;
+  final user = UserData();
+  user.updateData(newPremiumAmount: amount);
 
   if (amount == null || plan == null) {
-      setState(() {
-        _ShowratesController.text= '-';
-        _errorText = null;
-        calculatedPremium = null;
-      });
-      return;
-    } 
-    if (amount< plan.minIns) {
-      setState(() {
-        _errorText = "ขั้นต่ำคือ ${plan.minIns} บาท";
-        _ShowratesController.text= '-';
-      });
-      return;
-    } else {
-      setState(() {
-        _errorText = null;
-      });
-    }
-    final rate = getRateForAgeGender(
-      plan: plan,
-      age: _userData.age ?? 0,
-      gender: _userData.gender ?? 'male',
-    );
-    final discount = getDiscountForPremium(plan, amount);
-    final premium = (rate - discount) * amount / 1000;
-    UserData().updatePremium(premium);
-
     setState(() {
-      calculatedPremium = premium;
-      _ShowratesController.text = premium.toStringAsFixed(2);
+      _ShowratesController.text = '-';
+      _errorText = null;
+      calculatedPremium = null;
     });
-    print('--- คำนวณเบี้ยประกัน ---');
-    print('รหัสประกัน: ${plan.code}');
-    print('เงินทุน: $amount');
-    print('อายุ: ${_userData.age}');
-    print('เพศ: ${_userData.gender}');
-    print('Rate: $rate');
-    print('Discount: $discount');
-    print('endage: ${plan.endage}');
-    print('ค่าเบี้ยรวม: $premium');
-    print('-----------------------');
+    return;
+  }
+
+  if (amount < plan.minIns) {
+    setState(() {
+      _errorText = "ขั้นต่ำคือ ${plan.minIns} บาท";
+      _ShowratesController.text = '-';
+    });
+    return;
+  } else {
+    setState(() {
+      _errorText = null;
+    });
+  }
+  
+  // คำนวณ Rate และ Discount
+  final rate = getRateForAgeGender(
+    plan: plan,
+    age: _userData.age ?? 0,
+    gender: _userData.gender ?? 'male',
+  );
+
+  final discount = getDiscountForPremium(plan, amount);
+  final premium = (rate - discount) * amount / 1000;
+  UserData().updatePremium(premium);
+
+  // โหลด JSON ของแผนประกัน
+  Map<String, dynamic> jsonData = await loadJsonMapForPolicy(plan.code);
+  List<double> dataValues = getAllPolicyData(
+    jsonData: jsonData,
+    gender: _userData.gender ?? 'female',
+    age: _userData.age ?? 0,
+    productCode: plan.code,
+    endAge: plan.endage,
+  );
+  user.updateDataValues(dataValues);
+
+  // Log ข้อมูล dataValues
+  print('--- dataValues ---');
+  print(dataValues);
+
+  final surrenderCalculator = SurrenderValueCalculator(
+    dataValues: user.dataValues,
+    insuredAmount: amount, // ใช้ทุนประกันที่ผู้ใช้ใส่
+  );
+  List<double> surrenderValues = surrenderCalculator.calculate();
+  
+  UserData().updateAccumulatedPremiums(
     computeAccumulatedPremium(
+      plan: plan,
+      userData: _userData,
+      annualPremium: premium,
+    ),
+  );
+
+
+  // อัปเดต UI
+  setState(() {
+    calculatedPremium = premium;
+    _ShowratesController.text = premium.toStringAsFixed(2);
+  });
+
+  // Log รายละเอียดการคำนวณเบี้ย
+  print('--- คำนวณเบี้ยประกัน ---');
+  print('รหัสประกัน: ${plan.code}');
+  print('เงินทุน: $amount');
+  print('อายุ: ${_userData.age}');
+  print('เพศ: ${_userData.gender}');
+  print('Rate: $rate');
+  print('Discount: $discount');
+  print('endage: ${plan.endage}');
+  print('ค่าเบี้ยรวม: $premium');
+  print('-----------------------');
+
+  // คำนวณเบี้ยสะสมตามปีกรมธรรม์
+  computeAccumulatedPremium(
     plan: plan,
     userData: _userData,
     annualPremium: premium,
   );
 }
+
 
 
   void updateDropdown1(String? value) {

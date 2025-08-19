@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:ins_application/Plan.dart';
+import 'package:ins_application/user_data.dart';
 import 'package:pdf/pdf.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -11,15 +14,24 @@ return pw.Font.ttf(fontData);
 
 Future<Uint8List> generateInsurancePdfWeb({
   required int startAge,
-  required String selectedTaxPercent,
+  required String gender,
+  required InsurancePlan plan,
+  required String insuranceCode,
+  required double insuredAmount,
+  required double calculatedPremium,
+  required List<double> dataValues,
+  required List<double> surrenderValues,
+  //required String selectedTaxPercent,
   required String insuranceType,
-  required String gender, required double calculatePremium,
+  required List<double> accumulatedPremiums,
+  //required String gender, required String insuranceCode,
 }) async {
   final font = await _loadFont('assets/fonts/Sarabun-Regular.ttf');
   final pdf = pw.Document();
 
   int currentYear = 1;
   int currentAge = startAge;
+  
   currentAge++;
 
   final headers = [
@@ -47,19 +59,32 @@ Future<Uint8List> generateInsurancePdfWeb({
       }).toList(),
     ),
   ];
+  int endAge = plan.endage;
+  int untilyear = plan.untilyear;
+  final formatter = NumberFormat('#,##0'); // แสดงเลขเต็มพร้อม comma
+  final double? premium = UserData().Amount;
 
-  while (currentAge <= 90) {
+  while (currentAge <= endAge) {
+    //String premiumText = currentAge <= untilyear ? calculatedPremium.toStringAsFixed(0) : '';
+    String refundValue =
+        currentYear <= dataValues.length ? dataValues[currentYear - 1].toStringAsFixed(0) : '';
+    String accumulatedValue =
+        currentYear <= accumulatedPremiums.length ? accumulatedPremiums[currentYear - 1].toStringAsFixed(0) : '';
+    String surrenderValue =
+        currentYear <= surrenderValues.length ? surrenderValues[currentYear - 1].toStringAsFixed(0) : '';
+    
+
     tableRows.add(
       pw.TableRow(
         children: [
           pw.Text('$currentYear', style: pw.TextStyle(font: font)),
           pw.Text('$currentAge', style: pw.TextStyle(font: font)),
+          pw.Text( calculatedPremium != null ? formatter.format(calculatedPremium) : '', style: pw.TextStyle(font: font)),
           pw.Text('', style: pw.TextStyle(font: font)),
-          pw.Text('$selectedTaxPercent', style: pw.TextStyle(font: font)),
-          pw.Text('', style: pw.TextStyle(font: font)),
-          pw.Text('', style: pw.TextStyle(font: font)),
-          pw.Text('', style: pw.TextStyle(font: font)),
-          pw.Text('', style: pw.TextStyle(font: font)),
+          pw.Text('', style: pw.TextStyle(font: font)), //เงินคืน
+          pw.Text(accumulatedValue.isNotEmpty ? formatter.format(double.parse(accumulatedValue)) : '', style: pw.TextStyle(font: font)),
+          pw.Text(surrenderValue.isNotEmpty ? formatter.format(double.parse(surrenderValue)) : '', style: pw.TextStyle(font: font)),
+          pw.Text(premium != null ? formatter.format(premium) : '', style: pw.TextStyle(font: font)),
         ].map((e) => pw.Container(
           alignment: pw.Alignment.center,
           padding: const pw.EdgeInsets.all(4),

@@ -247,31 +247,44 @@ void initState() {
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final int startAge = _userData.age ?? 0;
-                    final String taxPercent = selectedPercent ?? '0';
-                    final String gender = _userData.gender ?? '';
-                    
+                onPressed: () async {
+                  final userData = UserData();
 
-                    final pdfBytes = await generateInsurancePdfWeb(
-                      startAge: startAge, 
-                      selectedTaxPercent: taxPercent, 
-                      insuranceType: selectedOpt!, 
-                      gender: gender,
-                      calculatePremium: double.tryParse(_calculatedPremiumController.text) ?? 0.0,
-                    );
-                    await Printing.layoutPdf(
-                      onLayout: (format) async => pdfBytes,
-                      name: 'insurance_summary.pdf',
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text('EXPORT'),
+                  // ตรวจสอบค่า null หรือใช้ default
+                  final int startAge = userData.age ?? 0;
+                  final String gender = userData.gender ?? 'male';
+                  final String insuranceCode = userData.selectedPlan?.code ?? '';
+                  final double insuredAmount = userData.premiumAmount ?? 0.0;
+                  final double calculatedPremium = userData.premiumAmount ?? 0.0;
+                  InsurancePlan selectedPlan = _userData.selectedPlan!;
+
+                  final pdfBytes = await generateInsurancePdfWeb(
+                    startAge: startAge, 
+                    gender: gender,
+                    accumulatedPremiums: userData.accumulatedPremiums, // เบี้ยสะสม
+                    insuranceCode: insuranceCode,
+                    insuredAmount: insuredAmount,
+                    calculatedPremium: calculatedPremium,
+                    dataValues: userData.dataValues,
+                    surrenderValues: userData.surrenderValues,
+                    //selectedTaxPercent: selectedPercent ?? '0',
+                    insuranceType: selectedOpt ?? '', 
+                    plan: selectedPlan,
+                  );
+
+                  await Printing.layoutPdf(
+                    onLayout: (format) async => pdfBytes,
+                    name: 'insurance_summary.pdf',
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black87,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
+                child: const Text('EXPORT'),
+              ),
+
               ),
             ],
           ),
