@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:ins_application/Plan.dart';
+import 'package:ins_application/user_data.dart';
 import 'Functions.dart';
 import 'package:printing/printing.dart';
 import 'Export.dart';
@@ -18,17 +23,12 @@ class _FixedFormTabState extends State<FixedFormTab> with AutomaticKeepAliveClie
   final TextEditingController _plateController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
-  final TextEditingController _langController = TextEditingController();
-  final TextEditingController _hecController = TextEditingController();
-  final TextEditingController _taxController = TextEditingController();
-  final TextEditingController _hbController = TextEditingController();
-  final TextEditingController _dd50Controller = TextEditingController();
-  final TextEditingController _aiController = TextEditingController();
-  final TextEditingController _addController = TextEditingController();
-  final TextEditingController _adbController = TextEditingController();
+  final TextEditingController _calculatedPremiumController = TextEditingController();
   final TextEditingController premiumAmountController = TextEditingController();
   List<Map<String, dynamic>> _dynamicFields = [];
-  String? _selectedGender;
+  final UserData _userData = UserData();
+  List<InsurancePlan> products = [];
+  String? gender;
   int? _selectedNumber;
   String? selectedKind;
   String? selectedOpt;
@@ -37,29 +37,26 @@ class _FixedFormTabState extends State<FixedFormTab> with AutomaticKeepAliveClie
   String? selectedOption1;
   String? selectedOption2;
   String? selectedPercent;
-  String _selectedInsuranceKind = '';
-  String _selectedInsuranceOpt = '';
+  double? sumAssured;
+  int? age;
+  double calculatedPremium = 0.0;
+  bool _isLoading = false;
 
 
   // Dropdown
   String selectedValue = 'Value';
+  Map<String, dynamic> currentPlanData = {};
 
   @override
   bool get wantKeepAlive => true; // ให้แท็บนี้รักษาสถานะไว้
+
 
   void _clearAllFields() {
     _plateController.clear();
     _ageController.clear();
     _yearController.clear();
-    _langController.clear();
-    _hecController.clear();
-    _taxController.clear();
-    _hbController.clear();
-    _dd50Controller.clear();
-    _aiController.clear();
-    _addController.clear();
-    _adbController.clear();
     premiumAmountController.clear();
+    _calculatedPremiumController.clear();
     for (var field in _dynamicFields) {
       field['controller'].clear();
     }
@@ -74,12 +71,12 @@ class _FixedFormTabState extends State<FixedFormTab> with AutomaticKeepAliveClie
   }
 }
 
-/*void _onDropdownChange(String country, String city) {
-    setState(() {
-      selectedKind = country;
-      selectedOpt = city;
-    });
-  }*/
+void _updateUserData() {
+    _userData.updateData(
+      newGender: gender,
+      newAge: int.tryParse(_ageController.text),
+    );
+  }
 
 void _handlePercentChanged(String? newValue) {
     if (newValue != null) {
@@ -89,9 +86,15 @@ void _handlePercentChanged(String? newValue) {
     }
 }
 
-
-
-  
+@override
+void initState() {
+  super.initState();
+  loadProducts().then((data) {
+    setState(() {
+      products = data;
+    });
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -143,20 +146,23 @@ void _handlePercentChanged(String? newValue) {
               Row(
                 children: [
                   Checkbox(
-                    value: _selectedGender == 'ชาย', 
+                    value: gender == 'male', 
                     onChanged: (bool? value) {
                       setState(() {
-                        _selectedGender = value! ? 'ชาย' : null;
+                        gender = value! ? 'male' : null;
+                        _updateUserData(); 
                       });
                     }
                   ),
                   const Text('ชาย'),
                   const SizedBox(width: 10),
                   Checkbox(
-                    value: _selectedGender == 'หญิง', 
+                    value: gender == 'female', 
                     onChanged: (bool? value) {
                       setState(() {
-                        _selectedGender = value! ? 'หญิง' : null;
+                        gender = value! ? 'female' : null;
+                        _updateUserData();
+                         
                       });
                     }
                   ),
@@ -176,6 +182,9 @@ void _handlePercentChanged(String? newValue) {
                   border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    _updateUserData(); 
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -202,23 +211,17 @@ void _handlePercentChanged(String? newValue) {
           ), 
           const SizedBox(height: 16),
       
-          //CascadingDropdown(onSelectionChanged: _onDropdownChange),
           CascadingDropdown(
-            onSelectionChanged: (kind, type) {
-              setState(() {
-                selectedKind = kind;
-                selectedOpt = type;
-              });
+            onSelectionChanged: (code, plan) {
+              print("เลือก: $code");
             },
           ),
-
       
           const SizedBox(height: 16),
-          // Dropdown
           SelectableDoubleDropdown(
-            options: ['เบี้ยประกัน', 'ทุนประกัน'], 
-            controller: premiumAmountController,
-          ),
+              options: const ['เบี้ยประกัน', 'ทุนประกัน'],
+              controller: premiumAmountController, 
+            ),
       
           const SizedBox(height: 16),
       
@@ -245,15 +248,17 @@ void _handlePercentChanged(String? newValue) {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () async {
-                    final int startAge = int.tryParse(_ageController.text) ?? 0;
+                    final int startAge = _userData.age ?? 0;
                     final String taxPercent = selectedPercent ?? '0';
+                    final String gender = _userData.gender ?? '';
                     
 
                     final pdfBytes = await generateInsurancePdfWeb(
                       startAge: startAge, 
                       selectedTaxPercent: taxPercent, 
                       insuranceType: selectedOpt!, 
-                      gender: _selectedGender ?? '',
+                      gender: gender,
+                      calculatePremium: double.tryParse(_calculatedPremiumController.text) ?? 0.0,
                     );
                     await Printing.layoutPdf(
                       onLayout: (format) async => pdfBytes,
@@ -281,15 +286,7 @@ void _handlePercentChanged(String? newValue) {
     _plateController.dispose();
     _ageController.dispose();
     _yearController.dispose();
-    _langController.dispose();
-    _hecController.dispose();
-    _taxController.dispose();
-    _hbController.dispose();
-    _dd50Controller.dispose();
-    _aiController.dispose();
-    _addController.dispose();
-    _adbController.dispose();
-    premiumAmountController.dispose();
+    _calculatedPremiumController.dispose();
     for (var field in _dynamicFields) {
       field['controller'].dispose();
     }

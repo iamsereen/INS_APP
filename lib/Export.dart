@@ -13,7 +13,7 @@ Future<Uint8List> generateInsurancePdfWeb({
   required int startAge,
   required String selectedTaxPercent,
   required String insuranceType,
-  required String gender,
+  required String gender, required double calculatePremium,
 }) async {
   final font = await _loadFont('assets/fonts/Sarabun-Regular.ttf');
   final pdf = pw.Document();

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:ins_application/INS_CAL.dart';
+import 'package:ins_application/Plan.dart';
+import 'package:ins_application/user_data.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, FilteringTextInputFormatter, TextInputFormatter;
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
 
 
@@ -66,7 +71,7 @@ Future<Map<String, dynamic>?> showAddFieldDialog(BuildContext context) async {
 }
 
 class CascadingDropdown extends StatefulWidget {
-  final Function(String, String) onSelectionChanged;
+  final Function(String code, String fileName) onSelectionChanged;
 
   const CascadingDropdown({Key? key, required this.onSelectionChanged})
       : super(key: key);
@@ -76,82 +81,162 @@ class CascadingDropdown extends StatefulWidget {
 }
 
 class _CascadingDropdownState extends State<CascadingDropdown> {
-  final Map<String, List<String>> dataMap = {
-    'ตลอดชีพ': ['20LPB', '20SLPA', 'CX20', 'CX10', '5SLC', '10SLC', '12TXM', '24TXN', 'WXN10', 'WXN15'],
-    'สะสมทรัพย์': ['15SPN', '7SM', '0'],
-    'บำนาญ': ['CX20', 'AR60N', 'AR65', '15HA', 'HA55', 'AS10', 'AS60', '0'],
-  };
-
-  String? selectedKind;
-  String? selectedOpt;
+  List<String> codes = [];
+  String? selectedCode;
+  InsurancePlan? selectedPlan;
+  final UserData _userData = UserData();
 
   @override
   void initState() {
-  super.initState();
-  if (dataMap.isNotEmpty) {
-    selectedKind = dataMap.keys.first;
+    super.initState();
+    _loadAllCodes();
   }
-}
+
+  Future<void> _loadAllCodes() async {
+    List<String> allCodes = [];
+    for (var entry in codeToFile.entries) {
+      final plans = await loadProducts(entry.value);
+      allCodes.addAll(plans.map((p) => p.code));
+    }
+    setState(() {
+      codes = allCodes;
+      if (codes.isNotEmpty) {
+        selectedCode = codes.first;
+        _updateSelectedPlan(selectedCode!);
+      }
+    });
+  }
+
+  Future<void> _updateSelectedPlan(String code) async {
+    final fileName = codeToFile[code] ?? "20LPB";
+    final plans = await loadProducts(fileName);
+    final plan = plans.firstWhere((p) => p.code == code, orElse: () => plans.first);
+
+    setState(() {
+      selectedPlan = plan;
+      selectedCode = code;
+    });
+
+    widget.onSelectionChanged(code, fileName);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-            value: selectedKind,
-            items: dataMap.keys.map((Kind) {
-              return DropdownMenuItem(
-                value: Kind,
-                child: Text(Kind),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedKind = value;
-                selectedOpt = null;
-              });
-              if (value != null && selectedOpt != null) {
-                widget.onSelectionChanged(value, selectedOpt!);
-              }
-            },
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: const InputDecoration(
-              labelText: 'ประเภท',
-              border: OutlineInputBorder(),
-            ),
-            value: selectedOpt,
-            items: (selectedKind != null
-                    ? dataMap[selectedKind]!
-                    : <String>[])
-                .map((city) {
-              return DropdownMenuItem(
-                value: city,
-                child: Text(city),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedOpt = value;
-              });
-              if (selectedKind != null && value != null) {
-                widget.onSelectionChanged(selectedKind!, value);
-              }
-            },
-          ),
-        ),
-      ],
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(
+        labelText: 'รหัสประกัน',
+        border: OutlineInputBorder(),
+      ),
+      value: selectedCode,
+      items: codes
+          .map((c) => DropdownMenuItem(
+                value: c,
+                child: Text(c),
+              ))
+          .toList(),
+      onChanged: (value) async {
+        if (value == null) return;
+
+        final fileName = codeToFile[value] ?? "20LPB";
+        final plans = await loadProducts(fileName);
+
+        // ใช้ plans จากไฟล์ที่โหลด ไม่ใช่ widget.products
+        final newPlan = plans.firstWhere(
+          (p) => p.code == value,
+          orElse: () => plans.first,
+        );
+
+        setState(() {
+          selectedCode = value;
+          selectedPlan = newPlan;
+        });
+
+        widget.onSelectionChanged(value, fileName);
+        showPlanByCode(value, fileName);
+
+        // อัปเดต Singleton
+        final userData = UserData();
+        userData.updateData(
+          newCode: value,
+          newPlan: newPlan,
+        );
+      },
     );
   }
 }
+
+/*class CascadingDropdown extends StatefulWidget {
+  final Function(String) onSelectionChanged;
+  final List<InsurancePlan> products;
+
+  const CascadingDropdown({
+    Key? key,
+    required this.onSelectionChanged,
+    required this.products,
+  }) : super(key: key);
+
+  @override
+  State<CascadingDropdown> createState() => _CascadingDropdownState();
+}
+
+class _CascadingDropdownState extends State<CascadingDropdown> {
+  String? selectedKind;
+  String? selectedCode;
+  final UserData _userData = UserData();
+  List<InsurancePlan> currentPlans = [];
+  InsurancePlan? selectedPlan;
+
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.products.isNotEmpty) {
+      selectedCode = currentPlans.first.code;
+      currentPlans = widget.products;
+      selectedPlan = currentPlans.first;
+      // ส่งค่าเริ่มต้นกลับไปยัง parent
+      widget.onSelectionChanged(selectedCode!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(
+        labelText: 'รหัสประกัน',
+        border: OutlineInputBorder(),
+      ),
+      value: selectedCode,
+      items: currentPlans
+          .map((plan) => DropdownMenuItem(
+                value: plan.code,
+                child: Text(plan.code),
+              ))
+          .toList(),
+      onChanged: (value) async {
+        if (value == null) return;
+        final fileName = codeToFile[value] ?? "20LPB";
+        try {
+          final plans = await loadProducts(fileName);
+          final newplan = plans.firstWhere((p) => p.code == value, orElse: () => plans.first);
+
+          setState(() {
+          currentPlans = plans;
+          selectedCode = value;
+          selectedPlan = newplan;
+          _userData.selectedPlan = newplan;
+        });
+          
+          widget.onSelectionChanged(value);
+          showPlanByCode(value, fileName);
+        } catch (e) {
+          print("ไม่สามารถโหลดไฟล์ JSON: $fileName, error: $e");
+        }
+      },
+    );
+  }
+}*/
+
 
 class SelectableDoubleDropdown extends StatefulWidget {
   final List<String> options;
@@ -160,7 +245,7 @@ class SelectableDoubleDropdown extends StatefulWidget {
   const SelectableDoubleDropdown({
     super.key,
     required this.options,
-    required this.controller,
+    required this.controller, 
   });
 
   @override
@@ -170,6 +255,11 @@ class SelectableDoubleDropdown extends StatefulWidget {
 class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
   String? selectedOption1;
   String? selectedOption2;
+  final UserData _userData = UserData();
+  String? _errorText;
+  double? calculatedPremium;
+  final TextEditingController _ShowratesController = TextEditingController();
+
 
   @override
   void initState() {
@@ -183,7 +273,64 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
       selectedOption1 = widget.options[0];
       selectedOption2 = null;
     }
+    widget.controller.addListener(_updatePremiumAmount);
   }
+
+
+  void _updatePremiumAmount() {
+  final double? amount = double.tryParse(widget.controller.text);
+  _userData.updateData(newPremiumAmount: amount);
+  final InsurancePlan? plan = _userData.selectedPlan;
+
+  if (amount == null || plan == null) {
+      setState(() {
+        _ShowratesController.text= '-';
+        _errorText = null;
+        calculatedPremium = null;
+      });
+      return;
+    } 
+    if (amount< plan.minIns) {
+      setState(() {
+        _errorText = "ขั้นต่ำคือ ${plan.minIns} บาท";
+        _ShowratesController.text= '-';
+      });
+      return;
+    } else {
+      setState(() {
+        _errorText = null;
+      });
+    }
+    final rate = getRateForAgeGender(
+      plan: plan,
+      age: _userData.age ?? 0,
+      gender: _userData.gender ?? 'male',
+    );
+    final discount = getDiscountForPremium(plan, amount);
+    final premium = (rate - discount) * amount / 1000;
+    UserData().updatePremium(premium);
+
+    setState(() {
+      calculatedPremium = premium;
+      _ShowratesController.text = premium.toStringAsFixed(2);
+    });
+    print('--- คำนวณเบี้ยประกัน ---');
+    print('รหัสประกัน: ${plan.code}');
+    print('เงินทุน: $amount');
+    print('อายุ: ${_userData.age}');
+    print('เพศ: ${_userData.gender}');
+    print('Rate: $rate');
+    print('Discount: $discount');
+    print('endage: ${plan.endage}');
+    print('ค่าเบี้ยรวม: $premium');
+    print('-----------------------');
+    computeAccumulatedPremium(
+    plan: plan,
+    userData: _userData,
+    annualPremium: premium,
+  );
+}
+
 
   void updateDropdown1(String? value) {
     setState(() {
@@ -201,6 +348,14 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
       }
       selectedOption2 = value;
     });
+  }
+
+  @override
+  void dispose() {
+    // อย่าลืมลบ Listener เมื่อ State ถูกทำลาย
+    widget.controller.removeListener(_updatePremiumAmount);
+    _ShowratesController.dispose();
+    super.dispose();
   }
 
   @override
@@ -223,22 +378,49 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
               width: 212,
               child: TextField(
                 controller: widget.controller, 
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'ระบุค่าเพิ่มเติม',
                   border: OutlineInputBorder(),
+                  errorText: _errorText,
                 ),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
+        
 
-        // ✅ Dropdown 2
-        DropdownButtonFormField<String>(
-          value: selectedOption2,
-          items: widget.options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
-          onChanged: updateDropdown2,
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: selectedOption2,
+                items: widget.options
+                    .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
+                    .toList(),
+                onChanged: (value) {
+                  updateDropdown2(value); // เปลี่ยนค่า dropdown
+                  
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            // ถ้าอยากโชว์ค่าเบี้ยใน UI ให้ใช้ Text widget แทน
+            Expanded(
+              child: TextField(
+                controller: UserData().premiumController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'ค่าเบี้ย',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            )
+
+          ],
         ),
+
+        
       ],
     );
   }
@@ -249,10 +431,10 @@ class PercentDropdown extends StatefulWidget {
   final String? initialValue;
 
   const PercentDropdown({
-    Key? key,
+    super.key,
     required this.onChanged,
     this.initialValue,
-  }) : super(key: key);
+  });
 
   @override
   State<PercentDropdown> createState() => _PercentDropdownState();
