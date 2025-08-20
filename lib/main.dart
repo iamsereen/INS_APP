@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:ins_application/HomePage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -96,7 +97,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const AdminPage(),
+      home: const LoginScreen(),
     );
   }
 }

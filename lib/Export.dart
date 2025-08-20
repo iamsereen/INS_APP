@@ -79,12 +79,36 @@ Future<Uint8List> generateInsurancePdfWeb({
         children: [
           pw.Text('$currentYear', style: pw.TextStyle(font: font)),
           pw.Text('$currentAge', style: pw.TextStyle(font: font)),
-          pw.Text( calculatedPremium != null ? formatter.format(calculatedPremium) : '', style: pw.TextStyle(font: font)),
+          pw.Container(
+            alignment: pw.Alignment.centerLeft, // ชิดซ้าย
+            child: pw.Text(
+              calculatedPremium != null ? formatter.format(calculatedPremium) : '',
+              style: pw.TextStyle(font: font),
+            ),
+          ),
           pw.Text('', style: pw.TextStyle(font: font)),
           pw.Text('', style: pw.TextStyle(font: font)), //เงินคืน
-          pw.Text(accumulatedValue.isNotEmpty ? formatter.format(double.parse(accumulatedValue)) : '', style: pw.TextStyle(font: font)),
-          pw.Text(surrenderValue.isNotEmpty ? formatter.format(double.parse(surrenderValue)) : '', style: pw.TextStyle(font: font)),
-          pw.Text(premium != null ? formatter.format(premium) : '', style: pw.TextStyle(font: font)),
+          pw.Container(
+            alignment: pw.Alignment.centerRight, // ชิดซ้าย
+            child: pw.Text(
+              accumulatedValue.isNotEmpty ? formatter.format(double.parse(accumulatedValue)) : '',
+              style: pw.TextStyle(font: font),
+            ),
+          ),
+          pw.Container(
+            alignment: pw.Alignment.centerRight, // ชิดซ้าย
+            child: pw.Text(
+              surrenderValue.isNotEmpty ? formatter.format(double.parse(surrenderValue)) : '',
+              style: pw.TextStyle(font: font),
+            ),
+          ),
+          pw.Container(
+            alignment: pw.Alignment.centerRight, // ชิดซ้าย
+            child: pw.Text(
+              premium != null ? formatter.format(premium) : '',
+              style: pw.TextStyle(font: font),
+            ),
+          ),
         ].map((e) => pw.Container(
           alignment: pw.Alignment.center,
           padding: const pw.EdgeInsets.all(4),
@@ -114,12 +138,6 @@ Future<Uint8List> generateInsurancePdfWeb({
       pageFormat: PdfPageFormat.a4,
       build: (pw.Context context) {
         return [
-          pw.Header(
-            level: 0,
-            child: pw.Text('ตารางข้อมูลประกันชีวิต',
-                style: pw.TextStyle(font: font, fontSize: 18)),
-          ),
-          pw.SizedBox(height: 16),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children:[
@@ -135,7 +153,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         alignment: pw.Alignment.centerLeft,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          'ประเภทประกัน: $insuranceType',
+                          'ประเภทประกัน: $insuranceCode',
                           style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
@@ -149,7 +167,10 @@ Future<Uint8List> generateInsurancePdfWeb({
                         alignment: pw.Alignment.centerLeft,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          'เพศ: $gender, อายุเริ่มต้น: $startAge',
+                          'เพศ: $gender, '
+                          'อายุ: $startAge,'
+                          'ทุนประกัน: ${UserData().Amount != null ? formatter.format(UserData().Amount) : '-'}, '
+                          'เงินออมรวม: ${UserData().accumulatedPremiums.isNotEmpty ? formatter.format(UserData().accumulatedPremiums.last) : '-'}',
                           style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
@@ -199,7 +220,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         alignment: pw.Alignment.centerRight,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          '450,000 บาท',
+                          '',
                           style: pw.TextStyle(font: font, fontSize: 12),
                         ),
                       ),
@@ -220,7 +241,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         alignment: pw.Alignment.centerRight,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          '450,000 บาท',
+                          '',
                           style: pw.TextStyle(font: font, fontSize: 12),
                         ),
                       ),
@@ -240,7 +261,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         alignment: pw.Alignment.centerRight,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          '450,000 บาท',
+                          '',
                           style: pw.TextStyle(font: font, fontSize: 12),
                         ),
                       ),
@@ -260,7 +281,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         alignment: pw.Alignment.centerRight,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          '450,000 บาท',
+                          '',
                           style: pw.TextStyle(font: font, fontSize: 12),
                         ),
                       ),
