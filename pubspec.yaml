@@ -79,6 +79,8 @@ flutter:
       - assets/json/20SLPA.json
       - assets/json/5SLC.json
       - assets/json/10SLC.json
+      - assets/json/AR5N.json
+      - assets/json/AR60N.json
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
