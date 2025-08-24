@@ -81,6 +81,15 @@ flutter:
       - assets/json/10SLC.json
       - assets/json/AR5N.json
       - assets/json/AR60N.json
+      - assets/json/CX10.json
+      - assets/json/CX20.json
+      - assets/json/12TXM.json
+      - assets/json/24TXN.json
+      - assets/json/WXN10.json
+      - assets/json/WXN15.json
+      - assets/json/7SM.json
+      - assets/json/15SPN.json
+      - assets/json/AR65.json
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
