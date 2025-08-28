@@ -50,6 +50,7 @@ Future<Uint8List> generateInsurancePdfWeb({
     pw.TableRow(
       children: headers.map((header) {
         return pw.Container(
+          height: 1.6 * PdfPageFormat.cm,
           alignment: pw.Alignment.center,
           padding: const pw.EdgeInsets.all(4),
           decoration: const pw.BoxDecoration(color: PdfColors.grey300),
@@ -80,7 +81,7 @@ Future<Uint8List> generateInsurancePdfWeb({
           pw.Text('$currentYear', style: pw.TextStyle(font: font)),
           pw.Text('$currentAge', style: pw.TextStyle(font: font)),
           pw.Container(
-            alignment: pw.Alignment.centerLeft, // ชิดซ้าย
+            alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               calculatedPremium != null ? formatter.format(calculatedPremium) : '',
               style: pw.TextStyle(font: font),
@@ -110,6 +111,7 @@ Future<Uint8List> generateInsurancePdfWeb({
             ),
           ),
         ].map((e) => pw.Container(
+          height: 0.5 * PdfPageFormat.cm,
           alignment: pw.Alignment.center,
           padding: const pw.EdgeInsets.all(4),
           child: e,
@@ -135,7 +137,12 @@ Future<Uint8List> generateInsurancePdfWeb({
 
   pdf.addPage(
     pw.MultiPage(
-      pageFormat: PdfPageFormat.a4,
+      pageFormat: PdfPageFormat.a4.copyWith(
+      marginLeft: 1 * PdfPageFormat.cm,
+      marginRight: 0.8 * PdfPageFormat.cm,
+      marginTop: 0.5 * PdfPageFormat.cm,
+      marginBottom: 3 * PdfPageFormat.cm,
+    ),
       build: (pw.Context context) {
         return [
           pw.Column(
@@ -144,12 +151,13 @@ Future<Uint8List> generateInsurancePdfWeb({
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: {
-                  0: pw.FixedColumnWidth(1),
+                  0: pw.FixedColumnWidth(1)
                 },
                 children: [
                   pw.TableRow(
                     children: [
                       pw.Container(
+                        height: 0.8 * PdfPageFormat.cm,
                         alignment: pw.Alignment.centerLeft,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
@@ -157,13 +165,14 @@ Future<Uint8List> generateInsurancePdfWeb({
                           style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
-                      for (int i = 1; i < 8; i++) pw.SizedBox(),
+                      //for (int i = 1; i < 8; i++) pw.SizedBox(),
                     ],
                   ),
                   // แถวที่ 2: ข้อมูลเพศและอายุเริ่มต้น
                   pw.TableRow(
                     children: [
                         pw.Container(
+                        height: 0.8 * PdfPageFormat.cm,
                         alignment: pw.Alignment.centerLeft,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
@@ -185,13 +194,14 @@ Future<Uint8List> generateInsurancePdfWeb({
           pw.Table(
             border: pw.TableBorder.all(),
             columnWidths: {
-              0: const pw.FlexColumnWidth(1), // สิ้นปีกธ.
-              1: const pw.FlexColumnWidth(1), // อายุ
-              2: const pw.FlexColumnWidth(2), // เบี้ยประกัน
-              3: const pw.FlexColumnWidth(2), // เงินคืน ภาษี
-              4: const pw.FlexColumnWidth(2), // เบี้ยสะสม
-              5: const pw.FlexColumnWidth(2), // มูลค่าเวนคืน
-              6: const pw.FlexColumnWidth(2),
+                  0: pw.FixedColumnWidth(1 * PdfPageFormat.cm),
+                  1: pw.FixedColumnWidth(1 * PdfPageFormat.cm),
+                  2: pw.FixedColumnWidth(2.8 * PdfPageFormat.cm),
+                  3: pw.FixedColumnWidth(2.6 * PdfPageFormat.cm),
+                  4: pw.FixedColumnWidth(2.8 * PdfPageFormat.cm),
+                  5: pw.FixedColumnWidth(3 * PdfPageFormat.cm),
+                  6: pw.FixedColumnWidth(3 * PdfPageFormat.cm),
+                  7: pw.FixedColumnWidth(3 * PdfPageFormat.cm),     
             },
             children: tableRows,
           ),

@@ -42,12 +42,34 @@ final Map<String, String> codeToFile = {
   "20LPB": "20LPB",
   "20SLPA": "20SLPA",
   "5SLC": "5SLC",
-  "10SLC": "10SLC"
+  "10SLC": "10SLC",
+  "CX10": "CX10",
+  "CX20": "CX20",
+  "12TXM": "12TXM",
+  "24TXN": "24TXN",
+  "WXN10": "WXN10",
+  "WXN15": "WXN15",
+  "7SM": "7SM",
+  "15SPN": "15SPN",
+  "AR5N": "AR5N",
+  "AR65": "AR65",
+  "15HA": "15HA",
+  "HA55": "HA55",
+  "AS10": "AS10",
+  "TLA": "TLA",
+  "DD50": "DD50",
+  "DDN": "DDN"
 };
 
 Future<List<InsurancePlan>> loadProducts([String filename = "20LPB"]) async {
   final String response = await rootBundle.loadString('assets/json/$filename.json');
-  final Map<String, dynamic> data = json.decode(response)['products'];
+  final decoded = json.decode(response);
+
+  if (decoded == null || decoded['products'] == null) {
+    throw Exception("ไม่พบ key 'products' ในไฟล์ $filename.json");
+  }
+
+  final Map<String, dynamic> data = decoded['products'] as Map<String, dynamic>;
 
   List<InsurancePlan> plans = [];
   data.forEach((code, value) {
@@ -56,6 +78,7 @@ Future<List<InsurancePlan>> loadProducts([String filename = "20LPB"]) async {
 
   return plans;
 }
+
 
 
 class Discount {

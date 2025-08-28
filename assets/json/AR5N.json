@@ -1,12 +1,12 @@
 {
-  "product": {
+  "products": {
     "AR5N": {
     "minIns": 100000,
     "code": "AR5N",
     "endage": 90,
     "untilyear": 5,
 
-    "coverage": {"percentage": ""},
+    "coverage": {"percentage": 100},
 
     "rates": [
     {
