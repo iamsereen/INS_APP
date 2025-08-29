@@ -5,6 +5,7 @@
     "code": "CX10",
     "endage": 90,
     "untilyear": 20,
+    "allPercent": 105,
     "discounts": [
     {
       "min": 1000000,

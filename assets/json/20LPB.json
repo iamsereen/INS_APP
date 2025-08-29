@@ -5,6 +5,7 @@
     "code": "20LPB",
     "endage": 90,
     "untilyear": 20,
+    "allPercent": 100,
     "discounts": [
     {
       "min": 400000,

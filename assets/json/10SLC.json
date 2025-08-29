@@ -5,6 +5,7 @@
     "code": "10SLC",
     "endage": 70,
     "untilyear": 10,
+    "allPercent": 100,
     "discounts": [
     {
       "min": 300000,

@@ -55,7 +55,7 @@ Future<Uint8List> generateInsurancePdfWeb({
           padding: const pw.EdgeInsets.all(4),
           decoration: const pw.BoxDecoration(color: PdfColors.grey300),
           child: pw.Text(header,
-              style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold)),
+              style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold, fontSize: 12)),
         );
       }).toList(),
     ),
@@ -78,36 +78,36 @@ Future<Uint8List> generateInsurancePdfWeb({
     tableRows.add(
       pw.TableRow(
         children: [
-          pw.Text('$currentYear', style: pw.TextStyle(font: font)),
-          pw.Text('$currentAge', style: pw.TextStyle(font: font)),
+          pw.Text('$currentYear', style: pw.TextStyle(font: font, fontSize: 12,)),
+          pw.Text('$currentAge', style: pw.TextStyle(font: font, fontSize: 12,)),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               calculatedPremium != null ? formatter.format(calculatedPremium) : '',
-              style: pw.TextStyle(font: font),
+              style: pw.TextStyle(font: font, fontSize: 12,),
             ),
           ),
-          pw.Text('', style: pw.TextStyle(font: font)),
-          pw.Text('', style: pw.TextStyle(font: font)), //เงินคืน
+          pw.Text('', style: pw.TextStyle(font: font, fontSize: 12,)),
+          pw.Text('', style: pw.TextStyle(font: font, fontSize: 12,)), //เงินคืน
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               accumulatedValue.isNotEmpty ? formatter.format(double.parse(accumulatedValue)) : '',
-              style: pw.TextStyle(font: font),
+              style: pw.TextStyle(font: font, fontSize: 12,),
             ),
           ),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               surrenderValue.isNotEmpty ? formatter.format(double.parse(surrenderValue)) : '',
-              style: pw.TextStyle(font: font),
+              style: pw.TextStyle(font: font, fontSize: 12,),
             ),
           ),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               premium != null ? formatter.format(premium) : '',
-              style: pw.TextStyle(font: font),
+              style: pw.TextStyle(font: font, fontSize: 12,),
             ),
           ),
         ].map((e) => pw.Container(
@@ -134,7 +134,6 @@ Future<Uint8List> generateInsurancePdfWeb({
     ),
   );
 
-
   pdf.addPage(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4.copyWith(
@@ -158,11 +157,11 @@ Future<Uint8List> generateInsurancePdfWeb({
                     children: [
                       pw.Container(
                         height: 0.8 * PdfPageFormat.cm,
-                        alignment: pw.Alignment.centerLeft,
+                        alignment: pw.Alignment.center,
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                          'ประเภทประกัน: $insuranceCode',
-                          style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
+                          insuranceCode,
+                          style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
                       //for (int i = 1; i < 8; i++) pw.SizedBox(),
@@ -170,22 +169,68 @@ Future<Uint8List> generateInsurancePdfWeb({
                   ),
                   // แถวที่ 2: ข้อมูลเพศและอายุเริ่มต้น
                   pw.TableRow(
-                    children: [
-                        pw.Container(
-                        height: 0.8 * PdfPageFormat.cm,
-                        alignment: pw.Alignment.centerLeft,
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(
-                          'เพศ: $gender, '
-                          'อายุ: $startAge,'
-                          'ทุนประกัน: ${UserData().Amount != null ? formatter.format(UserData().Amount) : '-'}, '
-                          'เงินออมรวม: ${UserData().accumulatedPremiums.isNotEmpty ? formatter.format(UserData().accumulatedPremiums.last) : '-'}',
-                          style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
-                        ),
+                  children: [
+                    pw.Container(
+                      height: 0.8 * PdfPageFormat.cm,
+                      alignment: pw.Alignment.centerLeft,
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Row(
+                        children: [ // ✅ เว้นระยะห่าง
+                        pw.SizedBox(width: 25),
+                          pw.Text(
+                            gender == 'male' ? 'ชาย' : gender == 'female' ? 'หญิง' : '-',
+                            style: pw.TextStyle(
+                              font: font,
+                              fontSize: 12,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.SizedBox(width: 35),
+                          pw.Text(
+                            startAge.toString(),
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                          pw.SizedBox(width: 40),
+                          pw.Text(
+                            'ทุนประกัน',
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                          pw.SizedBox(width: 30),
+                          pw.Text(
+                            UserData().Amount != null 
+                                ? formatter.format(UserData().Amount) 
+                                : '-',
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                          pw.SizedBox(width: 25),
+                          pw.Text(
+                            'บาท',
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                          pw.SizedBox(width: 40),
+                          pw.Text(
+                            'เงินออมรวม',
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                          pw.SizedBox(width: 30),
+                          pw.Text(
+                            UserData().accumulatedPremiums.isNotEmpty 
+                                ? formatter.format(UserData().accumulatedPremiums.last) 
+                                : '-',
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                          pw.SizedBox(width: 25),
+                          pw.Text(
+                            'บาท',
+                            style: pw.TextStyle(font: font, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      for (int i = 1; i < 8; i++) pw.SizedBox(),
-                    ],
-                  ),
+                    ),
+                    for (int i = 1; i < 8; i++) pw.SizedBox(),
+                  ],
+                ),
+
                 ]
               )
             ],
@@ -212,8 +257,8 @@ Future<Uint8List> generateInsurancePdfWeb({
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: {
-                  0: pw.FixedColumnWidth(5),
-                  1: pw.FixedColumnWidth(2),
+                  0: pw.FixedColumnWidth(13.2 * PdfPageFormat.cm),
+                  1: pw.FixedColumnWidth(6 * PdfPageFormat.cm),
                 },
                 children: [
                   pw.TableRow(

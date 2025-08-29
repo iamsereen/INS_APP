@@ -5,6 +5,7 @@
     "code": "20SLPA",
     "endage": 70,
     "untilyear": 20,
+    "allPercent": 100,
     "discounts": [
     {
       "min": 700000,

@@ -10,6 +10,7 @@ class InsurancePlan {
   final List<Rate> rates;
   final int endage;
   final int untilyear;
+  final int allPercent;
 
   InsurancePlan({
     required this.code,
@@ -18,7 +19,8 @@ class InsurancePlan {
     required this.coverage,
     required this.rates,
     required this.endage,
-    required this.untilyear
+    required this.untilyear,
+    required this.allPercent
   });
 
   factory InsurancePlan.fromJson(String code, Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class InsurancePlan {
       minIns: json['minIns'] ?? 0,
       endage: json['endage'] ?? 0,
       untilyear: json['untilyear'] ?? 0,
+      allPercent: json['allPercent'] ?? 0,
       discounts: (json['discounts'] as List? ?? [])
           .map((e) => Discount.fromJson(e))
           .toList(),
