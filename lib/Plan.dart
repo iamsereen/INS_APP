@@ -360,6 +360,59 @@ class SurrenderValueCalculator {
   }
 }
 
+class SummaryResult {
+  final double totalReceived;     // รวมรับผลประโยชน์ตลอดสัญญา
+  final double? taxBenefit;       // ผลประโยชน์ด้านภาษี
+  final double moreThanPaid;      // รับคืนผลประโยชน์มากกว่าเบี้ยที่ส่ง (ไม่รวมภาษี)
+  final double roi;               // อัตราผลตอบแทน (%)
+
+  SummaryResult({
+    required this.totalReceived,
+    this.taxBenefit,
+    required this.moreThanPaid,
+    required this.roi,
+  });
+}
+
+SummaryResult calculateSummaryTable({
+  required InsurancePlan plan,
+  required UserData userData,
+  double? taxBenefit, // ถ้าไม่มีส่ง null ได้
+}) {
+  double insuredAmount = userData.Amount ?? 0.0;
+
+  // รวมเบี้ยที่ส่งทั้งหมด (เบี้ยสะสมก้อนสุดท้าย)
+  double totalPremiums =
+      userData.accumulatedPremiums.isNotEmpty ? userData.accumulatedPremiums.last : 0.0;
+
+  // ✅ รวมรับผลประโยชน์ตลอดสัญญา = ทุนประกัน × allPercent ÷ 100
+  double totalReceived = (insuredAmount * (plan.allPercent / 100)).abs();
+
+  // ✅ ผลประโยชน์ด้านภาษี (เก็บ null ไว้ถ้าไม่มี)
+  double? tax = taxBenefit != null ? taxBenefit.abs() : null;
+
+  // ✅ ผลประโยชน์มากกว่าเบี้ยที่ส่ง
+  double moreThanPaid = (totalReceived - totalPremiums).abs();
+
+  // ✅ ROI = (ผลประโยชน์เพิ่ม ÷ เบี้ยรวม) × 100
+  double roi = totalPremiums > 0 ? ((moreThanPaid / totalPremiums) * 100).abs() : 0.0;
+
+  print("รวมรับผลประโยชน์ตลอดสัญญา: $totalReceived");
+  print("ผลประโยชน์ด้านภาษี: ${tax != null ? tax : '-'}");
+  print("รับคืนผลประโยชน์มากกว่าเบี้ยที่ส่ง: $moreThanPaid");
+  print("อัตราผลตอบแทน: $roi %");
+
+  return SummaryResult(
+    totalReceived: totalReceived,
+    taxBenefit: tax,
+    moreThanPaid: moreThanPaid,
+    roi: roi,
+  );
+}
+
+
+
+
 
 
 
