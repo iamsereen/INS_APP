@@ -27,6 +27,7 @@ Future<Uint8List> generateInsurancePdfWeb({
   //required String gender, required String insuranceCode,
 }) async {
   final font = await _loadFont('assets/fonts/Sarabun-Regular.ttf');
+  final ttfBold = await _loadFont('assets/fonts/Sarabun-Bold.ttf');
   final pdf = pw.Document();
   final summary = calculateSummaryTable(plan: plan, userData: UserData());
 
@@ -54,9 +55,10 @@ Future<Uint8List> generateInsurancePdfWeb({
         return pw.Container(
           height: 1.6 * PdfPageFormat.cm,
           alignment: pw.Alignment.center,
-          padding: const pw.EdgeInsets.all(4),
+          padding: pw.EdgeInsets.all(4),
           child: pw.Text(header,
-              style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold, fontSize: 12)),
+          textAlign: pw.TextAlign.center,
+          style: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold, fontSize: 10)),
         );
       }).toList(),
     ),
@@ -67,9 +69,16 @@ Future<Uint8List> generateInsurancePdfWeb({
   final double? premium = UserData().Amount;
 
   while (currentAge <= endAge) {
-    //String premiumText = currentAge <= untilyear ? calculatedPremium.toStringAsFixed(0) : '';
-    String refundValue =
-        currentYear <= dataValues.length ? dataValues[currentYear - 1].toStringAsFixed(0) : '';
+    // ในลูป while
+    final bool hasPremiumThisYear = currentYear <= untilyear;
+    final String premiumText = hasPremiumThisYear
+    ? formatter.format(calculatedPremium) 
+    : '';
+    String refundValue = '';
+    if (currentAge == endAge) {
+      // แถวสุดท้ายแสดงค่า summary.totalReceived
+      refundValue = formatter.format(summary.totalReceived);
+    }
     String accumulatedValue =
         currentYear <= accumulatedPremiums.length ? accumulatedPremiums[currentYear - 1].toStringAsFixed(0) : '';
     String surrenderValue =
@@ -79,41 +88,47 @@ Future<Uint8List> generateInsurancePdfWeb({
     tableRows.add(
       pw.TableRow(
         children: [
-          pw.Text('$currentYear', style: pw.TextStyle(font: font, fontSize: 12,)),
-          pw.Text('$currentAge', style: pw.TextStyle(font: font, fontSize: 12,)),
+          pw.Text('$currentYear', textAlign: pw.TextAlign.center, style: pw.TextStyle(font: font, fontSize: 8,)),
+          pw.Text('$currentAge', textAlign: pw.TextAlign.center, style: pw.TextStyle(font: font, fontSize: 8,)),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
-            child: pw.Text(
-              calculatedPremium != null ? formatter.format(calculatedPremium) : '',
-              style: pw.TextStyle(font: font, fontSize: 12,),
+            child: pw.Text(premiumText, style: pw.TextStyle(font: font, fontSize: 8)
             ),
           ),
-          pw.Text('', style: pw.TextStyle(font: font, fontSize: 12,)),
-          pw.Text('', style: pw.TextStyle(font: font, fontSize: 12,)), //เงินคืน
+          pw.Text('', textAlign: pw.TextAlign.center, style: pw.TextStyle(font: font, fontSize: 8,)),
+          pw.Container(
+            alignment: pw.Alignment.centerRight, // ชิดซ้าย
+            child: pw.Text(refundValue, style: pw.TextStyle(font: ttfBold, fontSize: 8)
+            ),
+          ),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               accumulatedValue.isNotEmpty ? formatter.format(double.parse(accumulatedValue)) : '',
-              style: pw.TextStyle(font: font, fontSize: 12,),
+              textAlign: pw.TextAlign.center, 
+              style: pw.TextStyle(font: font, fontSize: 8,),
             ),
           ),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               surrenderValue.isNotEmpty ? formatter.format(double.parse(surrenderValue)) : '',
-              style: pw.TextStyle(font: font, fontSize: 12,),
+              textAlign: pw.TextAlign.center, 
+              style: pw.TextStyle(font: font, fontSize: 8,),
             ),
           ),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(
               premium != null ? formatter.format(premium) : '',
-              style: pw.TextStyle(font: font, fontSize: 12,),
+              textAlign: pw.TextAlign.center, 
+              style: pw.TextStyle(font: font, fontSize: 8,),
             ),
           ),
         ].map((e) => pw.Container(
+          height: 0.5 * PdfPageFormat.cm,
           alignment: pw.Alignment.center,
-          padding: const pw.EdgeInsets.all(4),
+          padding: const pw.EdgeInsets.only(right: 4),
           child: e,
         )).toList(),
       ),
@@ -121,18 +136,6 @@ Future<Uint8List> generateInsurancePdfWeb({
     currentYear++;
     currentAge++;
   }
-
-  tableRows.add(
-    pw.TableRow(
-      children: List.generate(
-        headers.length,
-        (index) => pw.Container(
-          height: 20, 
-          child: pw.Text(''),
-        ),
-      ).toList(),
-    ),
-  );
 
   pdf.addPage(
     pw.MultiPage(
@@ -248,9 +251,47 @@ Future<Uint8List> generateInsurancePdfWeb({
                   6: pw.FixedColumnWidth(3 * PdfPageFormat.cm),
                   7: pw.FixedColumnWidth(3 * PdfPageFormat.cm),     
             },
-            children: tableRows,
+            children: [
+              ... tableRows,
+              pw.TableRow(
+              children: List.generate(
+                8, // จำนวนคอลัมน์เท่ากับตาราง
+                (index) {
+                  if (index == 2) {
+                    // ค่าสุดท้ายของ surrenderValues
+                    final lastSurrender = surrenderValues.isNotEmpty
+                        ? formatter.format(surrenderValues.last)
+                        : '';
+                    return pw.Container(
+                      height: 0.5 * PdfPageFormat.cm,
+                      padding: const pw.EdgeInsets.only(right: 4),
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Text(
+                        lastSurrender,
+                        style: pw.TextStyle(font: ttfBold, fontSize: 8, fontWeight: pw.FontWeight.bold),
+                      ),
+                    );
+                  } else if (index == 4) {
+                    return pw.Container(
+                    height: 0.5 * PdfPageFormat.cm,
+                    alignment: pw.Alignment.centerRight,
+                    padding: const pw.EdgeInsets.only(right: 4),
+                    child: pw.Text(
+                      formatter.format(summary.totalReceived),
+                      style: pw.TextStyle(font: ttfBold, fontSize: 8, fontWeight: pw.FontWeight.bold),
+                    ),
+                  );
+                  } else {
+                    return pw.Container(
+                      height: 0.5 * PdfPageFormat.cm,
+                      child: pw.Text(''),
+                    );
+                  }
+                }
+              ),
+            ),
+            ]
           ),
-
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children:[
@@ -268,7 +309,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           'รวมรับผลประโยชน์ตลอดสัญญา',
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                       pw.Container(
@@ -276,7 +317,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           formatter.format(summary.totalReceived),
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                     ],
@@ -289,7 +330,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           'ผลประโยชน์ด้านภาษี',
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                       pw.Container(
@@ -297,7 +338,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           summary.taxBenefit != null ? formatter.format(summary.taxBenefit!) : '-',
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                     ],
@@ -309,7 +350,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           'รับคืนผลประโยชน์มากกว่าเบี้ยที่ส่ง (ไม่รวมภาษี)',
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                       pw.Container(
@@ -317,7 +358,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           formatter.format(summary.moreThanPaid),
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                     ],
@@ -329,7 +370,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           'อัตราผลตอบแทน',
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                       pw.Container(
@@ -337,7 +378,7 @@ Future<Uint8List> generateInsurancePdfWeb({
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
                           '${summary.roi.toStringAsFixed(2)}%',
-                          style: pw.TextStyle(font: font, fontSize: 12),
+                          style: pw.TextStyle(font: font, fontSize: 8),
                         ),
                       ),
                     ],
