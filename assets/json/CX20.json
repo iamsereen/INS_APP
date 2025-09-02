@@ -5,6 +5,7 @@
     "code": "CX20",
     "endage": 90,
     "untilyear": 20,
+    "minage": 1,
     "allPercent": 105,
     "discounts": [
     {
@@ -25,7 +26,6 @@
     }
   ],
 
-    "coverage": {"percentage": 105},
 
   "rates": [
     {

@@ -5,6 +5,8 @@
     "code": "24TXN",
     "endage": 55,
     "untilyear": 24,
+    "minage": 1,
+    "allPercent": 100,
     "discounts": [
     {
       "min": 100000,
@@ -28,7 +30,6 @@
     }
   ],
 
-    "coverage": {"percentage": 100},
 
     "haveNOrates": [
   {

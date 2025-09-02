@@ -3,7 +3,8 @@
     "5SLC": {
     "minIns": 10000000,
     "code": "5SLC",
-    "endage": 70,
+    "endage": 99,
+    "minage": 1,
     "untilyear": 5,
     "allPercent": 100,
     "discounts": [
@@ -24,7 +25,6 @@
     }
   ],
 
-    "coverage": {"percentage": 100},
 
   "rates": [
   {

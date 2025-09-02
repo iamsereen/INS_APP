@@ -5,6 +5,7 @@
     "code": "20SLPA",
     "endage": 70,
     "untilyear": 20,
+    "minage": 1,
     "allPercent": 100,
     "discounts": [
     {
@@ -24,7 +25,6 @@
     }
   ],
 
-    "coverage": {"percentage": 100},
 
   "rates": [
     {

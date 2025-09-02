@@ -4,6 +4,8 @@
     "minIns": 100000,
     "code": "WXN15",
     "endage": 15,
+    "minage": 1,
+    "allPercent": 200,
     "untilyear": 15,
     "discounts": [
     {
@@ -22,8 +24,6 @@
       "discount": 5
     }
   ],
-
-    "coverage": {"percentage": 200},
 
     "haveNOrates": [
   {

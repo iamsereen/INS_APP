@@ -5,8 +5,15 @@
     "code": "AR5N",
     "endage": 90,
     "untilyear": 5,
-
-    "coverage": {"percentage": 100},
+    "minage": 20,
+    "allPercent": 105,
+    "discounts": [
+    {
+      "min": 100000,
+      "max": null,
+      "discount": 0
+    }
+  ],
 
     "rates": [
     {

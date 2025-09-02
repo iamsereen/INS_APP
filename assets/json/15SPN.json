@@ -5,6 +5,8 @@
     "code": "15SPN",
     "endage": 90,
     "untilyear": 15,
+    "allPercent": 100,
+    "minage": 1,
     "discounts": [
     {
       "min": 600000,

@@ -5,6 +5,8 @@
     "code": "WXN10",
     "endage": 15,
     "untilyear": 10,
+    "minage": 1,
+    "allPercent": 200,
     "discounts": [
     {
       "min": 300000,
@@ -23,7 +25,6 @@
     }
   ],
 
-    "coverage": {"percentage": 200},
 
     "haveNOrates": [
   {

@@ -5,8 +5,8 @@ import 'package:ins_application/user_data.dart';
 class InsurancePlan {
   final String code;
   final int minIns;
+  final int minage;
   final List<Discount> discounts;
-  final Coverage coverage;
   final List<Rate> rates;
   final int endage;
   final int untilyear;
@@ -15,8 +15,8 @@ class InsurancePlan {
   InsurancePlan({
     required this.code,
     required this.minIns,
+    required this.minage,
     required this.discounts,
-    required this.coverage,
     required this.rates,
     required this.endage,
     required this.untilyear,
@@ -28,12 +28,12 @@ class InsurancePlan {
       code: code,
       minIns: json['minIns'] ?? 0,
       endage: json['endage'] ?? 0,
+      minage: json['minage'] ?? 0,
       untilyear: json['untilyear'] ?? 0,
       allPercent: json['allPercent'] ?? 0,
       discounts: (json['discounts'] as List? ?? [])
           .map((e) => Discount.fromJson(e))
           .toList(),
-      coverage: Coverage.fromJson(json['coverage'] ?? {}),
       rates: (json['rates'] as List? ?? [])
           .map((e) => Rate.fromJson(e))
           .toList(),
@@ -100,17 +100,6 @@ class Discount {
   }
 }
 
-class Coverage {
-  final double percentage;
-
-  Coverage({required this.percentage});
-
-  factory Coverage.fromJson(Map<String, dynamic> json) {
-    return Coverage(
-      percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
-    );
-  }
-}
 
 class Rate {
   final int age;
@@ -139,7 +128,6 @@ Future<InsurancePlan> showPlanByCode(String code, String fileName) async {
   print("รหัส: ${plan.code}");
   print("อายุสิ้นสุด: ${plan.endage}");
   print("ขั้นต่ำ: ${plan.minIns}");
-  print("ความคุ้มครอง: ${plan.coverage.percentage}%");
   
 
   print("ส่วนลด:");
@@ -211,10 +199,16 @@ double calculatePremium(MappedInsuranceData data) {
     return 0.0;
   }
 
+  // ถ้าไม่มีส่วนลดจริง ๆ ก็จะเป็น 0
   double premium = (data.rate - data.discount) * data.premiumAmount / 1000;
-  print("ค่าเบี้ยประกัน = $premium บาท");
+
+  print("ค่าเบี้ยประกัน = $premium บาท"
+      "${data.discount > 0 ? " (มีส่วนลด ${data.discount})" : " (ไม่มีส่วนลด)"}");
+
   return premium;
 }
+
+
 
 // ฟังก์ชันหลักสำหรับแมพข้อมูลและคำนวณ
 void computeInsurancePremium({
@@ -236,7 +230,7 @@ void computeInsurancePremium({
 
   double discount = getDiscountForPremium(plan, userData.premiumAmount!);
 
-  double minIns = plan.minIns as double;
+  double minIns = plan.minIns.toDouble();
 
   MappedInsuranceData data = MappedInsuranceData(
     premiumAmount: userData.premiumAmount!,

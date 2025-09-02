@@ -3,27 +3,17 @@
     "AS60": {
     "minIns": 100000,
     "code": "AS60",
-    "endage": 90,
+    "endage": 40,
     "untilyear": 60,
-    "NOdiscounts": [
+    "minage": 20,
+    "allPercent": 105,
+    "discounts": [
     {
-      "min": 300000,
-      "max": 599999,
-      "discount": 1
-    },
-    {
-      "min": 600000,
-      "max": 999999,
-      "discount": 2
-    },
-    {
-      "min": 1000000,
+      "min": 100000,
       "max": null,
-      "discount": 3
+      "discount": 0
     }
   ],
-
-    "coverage": {"percentage": 100},
 
   "rates": [
   {

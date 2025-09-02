@@ -5,6 +5,8 @@
     "code": "TLA",
     "endage": 90,
     "untilyear": 60,
+    "minage": 1,
+    "allPercent": 100,
     "discounts": [
     {
       "min": 2000000,
@@ -13,7 +15,6 @@
     }
   ],
 
-    "coverage": {"percentage": 100},
 
   "rates": [
   {

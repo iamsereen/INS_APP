@@ -5,8 +5,16 @@
     "code": "AR60N",
     "endage": 44,
     "untilyear": 5,
+    "minage": 20,
+    "allPercent": 105,
+    "discounts": [
+    {
+      "min": 100000,
+      "max": null,
+      "discount": 0
+    }
+  ],
 
-    "coverage": {"percentage": 100},
 
     "rates": [
     {

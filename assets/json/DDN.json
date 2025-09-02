@@ -4,26 +4,16 @@
     "minIns": 100000,
     "code": "DDN",
     "endage": 70,
+    "minage": 16,
     "untilyear": 20,
-    "NOdiscounts": [
+    "discounts": [
     {
-      "min": 700000,
-      "max": 1099999,
-      "discount": 1
-    },
-    {
-      "min": 1100000,
-      "max": 1499999,
-      "discount": 2
-    },
-    {
-      "min": 1500000,
+      "min": 100000,
       "max": null,
-      "discount": 3
+      "discount": 0
     }
   ],
 
-    "coverage": {"percentage": 100},
 
   "rates": [
     {

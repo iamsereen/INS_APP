@@ -3,6 +3,7 @@
   "20LPB": {
     "minIns": 100000,
     "code": "20LPB",
+    "minage": 1,
     "endage": 90,
     "untilyear": 20,
     "allPercent": 100,
@@ -23,8 +24,6 @@
       "discount": 3
     }
   ],
-
-    "coverage": {"percentage": 100},
 
     "rates": [
     {

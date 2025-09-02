@@ -3,27 +3,17 @@
     "15HA": {
     "minIns": 100000,
     "code": "15HA",
-    "endage": 70,
+    "endage": 30,
     "untilyear": 5,
-    "NOdiscounts": [
+    "minage": 25,
+    "allPercent": 100,
+    "discounts": [
     {
-      "min": 300000,
-      "max": 599999,
-      "discount": 1
-    },
-    {
-      "min": 600000,
-      "max": 999999,
-      "discount": 2
-    },
-    {
-      "min": 1000000,
+      "min": 100000,
       "max": null,
-      "discount": 3
+      "discount": 0
     }
   ],
-
-    "coverage": {"percentage": 100},
 
   "rates": [
   {

@@ -177,13 +177,13 @@ void initState() {
               Expanded(
                 child: TextField(
                   controller: _ageController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                   labelText: 'อายุ',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
-                    _updateUserData(); 
+                    _updateUserData();
                   },
                 ),
               ),
