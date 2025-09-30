@@ -16,12 +16,12 @@
     {
       "min": 600000,
       "max": 999999,
-      "discount": 2
+      "discount": 3
     },
     {
       "min": 1000000,
       "max": null,
-      "discount": 3
+      "discount": 5
     }
   ],
 
