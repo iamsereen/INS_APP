@@ -259,8 +259,9 @@ List<double> computeAccumulatedPremium({
 
   for (int year = 1; year <= untilYear; year++) {
     accumulated += annualPremium;
-    accumulatedList.add(accumulated);
-    print('ปีที่ $year (อายุ ${currentAge + year}) = ${accumulated.toStringAsFixed(0)}');
+    double safeValue = accumulated.abs();
+    accumulatedList.add(safeValue);
+    print('ปีที่ $year (อายุ ${currentAge + year}) = ${safeValue.toStringAsFixed(0)}');
   }
 
   return accumulatedList;

@@ -357,7 +357,7 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
               child: TextField(
                 controller: widget.controller, 
                 decoration: InputDecoration(
-                  labelText: 'ระบุค่าเพิ่มเติม',
+                  labelText: 'ระบุค่า',
                   border: OutlineInputBorder(),
                   errorText: _errorText,
                 ),
@@ -389,7 +389,7 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
                 controller: UserData().premiumController,
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: 'ค่าเบี้ย',
+                  labelText: 'ค่าเบี้ยประกัน',
                   border: OutlineInputBorder(),
                 ),
               ),

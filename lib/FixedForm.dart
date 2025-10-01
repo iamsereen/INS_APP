@@ -219,7 +219,7 @@ void initState() {
       
           const SizedBox(height: 16),
           SelectableDoubleDropdown(
-              options: const ['เบี้ยประกัน', 'ทุนประกัน'],
+              options: const ['ทุนประกัน', 'เบี้ยประกัน'],
               controller: premiumAmountController, 
             ),
       

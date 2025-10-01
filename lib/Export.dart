@@ -90,7 +90,7 @@ Future<Uint8List> generateInsurancePdfWeb({
       pw.TableRow(
         children: [
           pw.Text('$currentYear', textAlign: pw.TextAlign.center, style: pw.TextStyle(font: font, fontSize: 8,)),
-          pw.Text('$currentAge', textAlign: pw.TextAlign.center, style: pw.TextStyle(font: font, fontSize: 8,)),
+          pw.Text('$currentAge', style: pw.TextStyle(font: font, fontSize: 8,)),
           pw.Container(
             alignment: pw.Alignment.centerRight, // ชิดซ้าย
             child: pw.Text(premiumText, style: pw.TextStyle(font: font, fontSize: 8)
@@ -293,6 +293,7 @@ Future<Uint8List> generateInsurancePdfWeb({
             ),
             ]
           ),
+          pw.SizedBox(height: 20),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children:[
@@ -392,7 +393,8 @@ Future<Uint8List> generateInsurancePdfWeb({
           pw.Center(
             child: 
               pw.Text(
-                "**เอกสารนี้เป็นเพียงเอกสารแสดงข้อมูลเบื้องต้น เกี่ยวกับแบบประกันภัยและลักษณะผลิตภัณฑ์ประกันภัยสำหรับใช้ในการอธิบายแก่ผู้ที่สนใจผลิตภัณฑ์ของ Chubb life เท่านั้น",
+                "**เอกสารนี้เป็นเพียงเอกสารแสดงข้อมูลเบื้องต้น เกี่ยวกับแบบประกันภัยและลักษณะผลิตภัณฑ์ประกันภัยสำหรับใช้ในการอธิบาย\nแก่ผู้ที่สนใจผลิตภัณฑ์ของ Chubb life เท่านั้น",
+                textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(font: font, fontSize: 8),
               ),
           ),
@@ -516,7 +518,7 @@ pw.Widget buildCriticalIllnessTables({
         if (itemIndex < totalItems) {
           rowCells.add(
             pw.Container(
-              padding: const pw.EdgeInsets.all(4),
+              padding: const pw.EdgeInsets.only(left: 28, top: 4, bottom: 4, right: 4),
               alignment: pw.Alignment.centerLeft,
               child: pw.Text(
                 '${itemIndex + 1}. ${items[itemIndex]}',
