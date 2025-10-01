@@ -1,0 +1,268 @@
+{
+  "products": {
+  "DDN": {
+    "minIns": 100000,
+    "code": "DDN",
+    "endage": 70,
+    "minage": 16,
+    "untilyear": 20,
+    "discounts": [
+    {
+      "min": 100000,
+      "max": null,
+      "discount": 0
+    }
+  ],
+
+
+  "rates": [
+    {
+      "age": 16,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 17,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 18,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 19,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 20,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 21,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 22,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 23,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 24,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 25,
+      "male": 1,
+      "female": 1.16
+    },
+    {
+      "age": 26,
+      "male": 1.18,
+      "female": 1.96
+    },
+    {
+      "age": 27,
+      "male": 1.18,
+      "female": 1.96
+    },
+    {
+      "age": 28,
+      "male": 1.18,
+      "female": 1.96
+    },
+    {
+      "age": 29,
+      "male": 1.18,
+      "female": 1.96
+    },
+    {
+      "age": 30,
+      "male": 1.18,
+      "female": 1.96
+    },
+    {
+      "age": 31,
+      "male": 1.77,
+      "female": 2.16
+    },
+    {
+      "age": 32,
+      "male": 1.77,
+      "female": 2.16
+    },
+    {
+      "age": 33,
+      "male": 1.77,
+      "female": 2.16
+    },
+    {
+      "age": 34,
+      "male": 1.77,
+      "female": 2.16
+    },
+    {
+      "age": 35,
+      "male": 1.77,
+      "female": 2.16
+    },
+    {
+      "age": 36,
+      "male": 3.17,
+      "female": 2.93
+    },
+    {
+      "age": 37,
+      "male": 3.17,
+      "female": 2.93
+    },
+    {
+      "age": 38,
+      "male": 3.17,
+      "female": 2.93
+    },
+    {
+      "age": 39,
+      "male": 3.17,
+      "female": 2.93
+    },
+    {
+      "age": 40,
+      "male": 3.17,
+      "female": 2.93
+    },
+    {
+      "age": 41,
+      "male": 5.09,
+      "female": 4.82
+    },
+    {
+      "age": 42,
+      "male": 5.09,
+      "female": 4.82
+    },
+    {
+      "age": 43,
+      "male": 5.09,
+      "female": 4.82
+    },
+    {
+      "age": 44,
+      "male": 5.09,
+      "female": 4.82
+    },
+    {
+      "age": 45,
+      "male": 5.09,
+      "female": 4.82
+    },
+    {
+      "age": 46,
+      "male": 6.06,
+      "female": 5.5
+    },
+    {
+      "age": 47,
+      "male": 6.06,
+      "female": 5.5
+    },
+    {
+      "age": 48,
+      "male": 6.06,
+      "female": 5.5
+    },
+    {
+      "age": 49,
+      "male": 6.06,
+      "female": 5.5
+    },
+    {
+      "age": 50,
+      "male": 6.06,
+      "female": 5.5
+    },
+    {
+      "age": 51,
+      "male": 11.64,
+      "female": 10.91
+    },
+    {
+      "age": 52,
+      "male": 11.64,
+      "female": 10.91
+    },
+    {
+      "age": 53,
+      "male": 11.64,
+      "female": 10.91
+    },
+    {
+      "age": 54,
+      "male": 11.64,
+      "female": 10.91
+    },
+    {
+      "age": 55,
+      "male": 11.64,
+      "female": 10.91
+    },
+    {
+      "age": 56,
+      "male": 23.21,
+      "female": 17.51
+    },
+    {
+      "age": 57,
+      "male": 23.21,
+      "female": 17.51
+    },
+    {
+      "age": 58,
+      "male": 23.21,
+      "female": 17.51
+    },
+    {
+      "age": 59,
+      "male": 23.21,
+      "female": 17.51
+    },
+    {
+      "age": 60,
+      "male": 23.21,
+      "female": 17.51
+    },
+    {
+      "age": 61,
+      "male": 48.04,
+      "female": 26.06
+    },
+    {
+      "age": 62,
+      "male": 48.04,
+      "female": 26.06
+    },
+    {
+      "age": 63,
+      "male": 48.04,
+      "female": 26.06
+    },
+    {
+      "age": 64,
+      "male": 48.04,
+      "female": 26.06
+    }
+  ]
+}
+  }
+}
+
