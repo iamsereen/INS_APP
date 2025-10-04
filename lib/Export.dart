@@ -141,6 +141,7 @@ Future<Uint8List> generateInsurancePdfWeb({
 
   pdf.addPage(
     pw.MultiPage(
+      maxPages: 10,
       pageFormat: PdfPageFormat.a4.copyWith(
       marginLeft: 1 * PdfPageFormat.cm,
       marginRight: 0.8 * PdfPageFormat.cm,
@@ -783,8 +784,9 @@ Future<void> exportInsurancePdfFlatten({
     );
 
     // ✅ Flatten PDF โดยใช้ Printing (เปิด dialog print/share)
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdfBytes,
+    await Printing.sharePdf(
+      bytes: pdfBytes,
+      filename: 'insurance.pdf',
     );
   } catch (e) {
     debugPrint("❌ Error while exporting PDF (Flatten): $e");
