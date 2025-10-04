@@ -276,10 +276,10 @@ void initState() {
                     onLayout: (format) async => pdfBytes,
                     name: 'insurance_summary.pdf',
                   );
-                  await Printing.sharePdf(
+                  /*await Printing.sharePdf(
                     bytes: pdfBytes,
                     filename: 'insurance_summary.pdf',
-                  );
+                  );*/
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black87,

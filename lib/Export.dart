@@ -756,7 +756,7 @@ pw.Widget buildCriticalIllnessTables({
   );
 }
 
-Future<void> exportInsurancePdfFlatten({
+/*Future<void> exportInsurancePdfFlatten({
   required int startAge,
   required String gender,
   required InsurancePlan plan,
@@ -792,5 +792,5 @@ Future<void> exportInsurancePdfFlatten({
     debugPrint("❌ Error while exporting PDF (Flatten): $e");
   }
   
-}
+}*/
 
