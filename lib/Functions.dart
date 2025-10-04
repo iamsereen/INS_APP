@@ -285,7 +285,7 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
   // อัปเดต UI
   setState(() {
     calculatedPremium = premium;
-    _ShowratesController.text = premium.toStringAsFixed(2);
+    UserData().updatePremium(premium);
   });
 
   // Log รายละเอียดการคำนวณเบี้ย
@@ -383,7 +383,7 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
               ),
             ),
             const SizedBox(width: 8),
-            // ถ้าอยากโชว์ค่าเบี้ยใน UI ให้ใช้ Text widget แทน
+            // โชว์ค่าเบี้ย
             Expanded(
               child: TextField(
                 controller: UserData().premiumController,
@@ -455,4 +455,40 @@ class _PercentDropdownState extends State<PercentDropdown> {
 }
 
 
+// two dropdowns
+/*class DropdownController with ChangeNotifier {
+  // ค่าเลือกของ dropdown แรก
+  String? selectedCategory;
 
+  // ค่าเลือกของ dropdown ที่สอง
+  String? selectedID;
+
+  // category -> items
+  final Map<String, List<String>> options = {
+    'ตลอดชีพ': ['20LPB', '20SLPA', 'CX10', 'CX20', '5SLC', '10SLC', '12TXM', '24TXN', 'WXN10', 'WXN15'],
+    'สะสมทรัพย์': ['15SPN', '7SM'],
+    'บำนาญ': ['AR60N', 'AR65', 'AR5N', '15HA', 'HA55', 'AS10', 'AS60'],
+  };
+
+  // list ของ dropdown แรก
+  List<String> get categories => options.keys.toList();
+
+  // list ของ dropdown ที่สอง (ขึ้นกับ category ที่เลือก)
+  List<String> get items {
+    if (selectedCategory == null) return [];
+    return options[selectedCategory] ?? [];
+  }
+
+  // เปลี่ยนค่า dropdown แรก
+  void setCategory(String value) {
+    selectedCategory = value;
+    selectedID = null; // reset dropdown ที่สอง
+    notifyListeners();
+  }
+
+  // เปลี่ยนค่า dropdown ที่สอง
+  void setItem(String value) {
+    selectedID = value;
+    notifyListeners();
+  }
+}*/

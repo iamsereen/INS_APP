@@ -5,6 +5,7 @@ import 'TableCX1020.dart';
 import 'package:ins_application/user_data.dart';
 import 'package:pdf/pdf.dart';
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -66,7 +67,7 @@ Future<Uint8List> generateInsurancePdfWeb({
   ];
   int endAge = plan.endage;
   int untilyear = plan.untilyear;
-  final formatter = NumberFormat('#,##0'); // แสดงเลขเต็มพร้อม comma
+  final formatter = NumberFormat('#,##0', 'en_US'); // แสดงเลขเต็มพร้อม comma
   final double? premium = UserData().Amount;
 
   while (currentAge <= endAge) {
@@ -754,4 +755,40 @@ pw.Widget buildCriticalIllnessTables({
   );
 }
 
+Future<void> exportInsurancePdfFlatten({
+  required int startAge,
+  required String gender,
+  required InsurancePlan plan,
+  required String insuranceCode,
+  required double insuredAmount,
+  required double calculatedPremium,
+  required List<double> dataValues,
+  required List<double> surrenderValues,
+  required String insuranceType,
+  required List<double> accumulatedPremiums,
+}) async {
+  try {
+    // เรียกฟังก์ชันสร้าง PDF ที่คุณมีอยู่แล้ว
+    final pdfBytes = await generateInsurancePdfWeb(
+      startAge: startAge,
+      gender: gender,
+      plan: plan,
+      insuranceCode: insuranceCode,
+      insuredAmount: insuredAmount,
+      calculatedPremium: calculatedPremium,
+      dataValues: dataValues,
+      surrenderValues: surrenderValues,
+      insuranceType: insuranceType,
+      accumulatedPremiums: accumulatedPremiums,
+    );
+
+    // ✅ Flatten PDF โดยใช้ Printing (เปิด dialog print/share)
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdfBytes,
+    );
+  } catch (e) {
+    debugPrint("❌ Error while exporting PDF (Flatten): $e");
+  }
+  
+}
 
