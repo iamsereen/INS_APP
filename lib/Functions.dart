@@ -179,67 +179,58 @@ class SelectableDoubleDropdown extends StatefulWidget {
 }
 
 class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
-  String? selectedOption1;
-  String? selectedOption2;
+  String? selectedOption;
   final UserData _userData = UserData();
   String? _errorText;
   double? calculatedPremium;
   final TextEditingController _ShowratesController = TextEditingController();
+  final TextEditingController _ShowmodeController = TextEditingController();
 
 
   @override
   void initState() {
     super.initState();
-
-    // ✅ เริ่มต้น: เอาตัวแรกใส่ dropdown1, ตัวถัดไปใส่ dropdown2
-    if (widget.options.length >= 2) {
-      selectedOption1 = widget.options[0];
-      selectedOption2 = widget.options[1];
-    } else if (widget.options.length == 1) {
-      selectedOption1 = widget.options[0];
-      selectedOption2 = null;
-    }
-    widget.controller.addListener(_updatePremiumAmount);
-    widget.controller.addListener(() {
-    // อ่านค่าที่ผู้ใช้กรอก
-    double? enteredAmount = double.tryParse(widget.controller.text);
-
-    // เก็บลง UserData
-    UserData().Amount = enteredAmount;
-
-    // ไม่คำนวณ anything ที่นี่
-    print('ทุนประกันที่ผู้ใช้กรอก: $enteredAmount');
-  });
+    // ตั้งค่าเริ่มต้นของดรอปดาวน์และข้อความโหมด
+  if (widget.options.length >= 2) {
+    selectedOption = widget.options[0];
+  } else if (widget.options.length == 1) {
+    selectedOption = widget.options[0];
   }
+
+  // อัปเดตข้อความโหมดเริ่มต้น
+  _ShowmodeController.text =
+      selectedOption == "ทุนประกัน" ? "เบี้ยประกัน" : "ทุนประกัน";
+
+  widget.controller.addListener(_updatePremiumAmount);
+}
 
 
   void _updatePremiumAmount() async {
-  final double? amount = double.tryParse(widget.controller.text);
-  _userData.updateData(newPremiumAmount: amount);
+  final double? inputamount = double.tryParse(widget.controller.text);
+  //_userData.updateData(newPremiumAmount: inputamount);
   final InsurancePlan? plan = _userData.selectedPlan;
   final user = UserData();
-  user.updateData(newPremiumAmount: amount);
+  //user.updateData(newPremiumAmount: inputamount);
 
-  if (amount == null || plan == null) {
+  if (inputamount == null || plan == null) {
     setState(() {
       _ShowratesController.text = '-';
       _errorText = null;
-      calculatedPremium = null;
+      //calculatedPremium = null;
     });
     return;
   }
 
-  if (amount < plan.minIns) {
-    setState(() {
-      _errorText = "ขั้นต่ำคือ ${plan.minIns} บาท";
-      _ShowratesController.text = '-';
-    });
-    return;
-  } else {
-    setState(() {
+  if (selectedOption == "ทุนประกัน" && inputamount < plan.minIns) {
+      setState(() {
+        _errorText = "ขั้นต่ำคือ ${plan.minIns} บาท";
+        _ShowratesController.text = '-';
+        calculatedPremium = null;
+      });
+      return;
+    } else {
       _errorText = null;
-    });
-  }
+}
   
   // คำนวณ Rate และ Discount
   final rate = getRateForAgeGender(
@@ -248,9 +239,38 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
     gender: _userData.gender ?? 'male',
   );
 
-  final discount = getDiscountForPremium(plan, amount);
-  final premium = (rate - discount) * amount / 1000;
-  UserData().updatePremium(premium);
+  final discount = getDiscountForPremium(plan, inputamount);
+
+  double?  money; // เงินทุนประกัน
+  double? rateValue; // เบี้ยประกัน
+
+  if (selectedOption == "ทุนประกัน") {
+      money = inputamount;
+      rateValue = ((rate - discount) * money / 1000).abs();
+    } else if (selectedOption == "เบี้ยประกัน") {
+      rateValue = inputamount;
+      final firstResult = ((rateValue * 1000) / rate).abs();
+      //print('คำนวณรอบแรก (ยังไม่หักส่วนลด): $firstResult');
+
+      final discount = await getDiscountForPremium(plan, firstResult);
+      //print('ส่วนลดที่ได้จาก JSON: $discount');
+
+      money = ((rateValue * 1000) / (rate - discount)).abs();
+      //print('ทุนประกันที่คำนวณได้ (หลังหักส่วนลด): $money');
+
+    _userData.updateData(newPremiumAmount: rateValue);
+    _userData.Amount = money;
+    _userData.updatePremium(rateValue);
+    }
+  
+  _userData.Amount = money; // เงินทุนประกัน
+  _userData.updatePremium(rateValue ?? 0); // เบี้ยประกัน
+
+
+  // อัปเดตเบี้ยใน TextField
+  UserData().premiumController.text =
+  rateValue != null ? rateValue.toStringAsFixed(0) : '-';
+
 
   // โหลด JSON ของแผนประกัน
   Map<String, dynamic> jsonData = await loadJsonMapForPolicy(plan.code);
@@ -263,76 +283,65 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
   );
   user.updateDataValues(dataValues);
 
-  // Log ข้อมูล dataValues
+  /* Log ข้อมูล dataValues
   print('--- dataValues ---');
-  print(dataValues);
+  print(dataValues);*/
 
   final surrenderCalculator = SurrenderValueCalculator(
     dataValues: user.dataValues,
-    insuredAmount: amount, // ใช้ทุนประกันที่ผู้ใช้ใส่
+    insuredAmount: money ?? 0, // ใช้ทุนประกันที่ผู้ใช้ใส่
   );
   List<double> surrenderValues = surrenderCalculator.calculate();
-  
-  UserData().updateAccumulatedPremiums(
-    computeAccumulatedPremium(
-      plan: plan,
-      userData: _userData,
-      annualPremium: premium,
-    ),
-  );
+  UserData().updateAccumulatedPremiums(surrenderValues);
 
+  // คำนวณเบี้ยสะสมตามปีกรมธรรม์
+  List<double> accumulated =
+    computeAccumulatedPremium(plan: plan, userData: _userData, annualPremium: rateValue ?? 0);
+    _userData.updateAccumulatedPremiums(accumulated);
 
   // อัปเดต UI
   setState(() {
-    calculatedPremium = premium;
-    UserData().updatePremium(premium);
+  UserData().premiumController.text =
+      selectedOption == "ทุนประกัน"
+          ? (rateValue?.toStringAsFixed(2) ?? '')
+          : (money?.toStringAsFixed(0) ?? '');
   });
 
-  // Log รายละเอียดการคำนวณเบี้ย
+  /* Log รายละเอียดการคำนวณเบี้ย
   print('--- คำนวณเบี้ยประกัน ---');
   print('รหัสประกัน: ${plan.code}');
-  print('เงินทุน: $amount');
+  print('เงินทุน: $money');
   print('อายุ: ${_userData.age}');
   print('เพศ: ${_userData.gender}');
   print('Rate: $rate');
   print('Discount: $discount');
   print('endage: ${plan.endage}');
-  print('ค่าเบี้ยรวม: $premium');
-  print('-----------------------');
+  print('ค่าเบี้ยรวม: $money');
+  print('-----------------------');*/
 
-  // คำนวณเบี้ยสะสมตามปีกรมธรรม์
-  computeAccumulatedPremium(
-    plan: plan,
-    userData: _userData,
-    annualPremium: premium,
-  );
+  }
+
+  void updateDropdown(String? value) {
+  setState(() {
+    selectedOption = value;
+
+    // รีเซ็ตช่องกรอกค่าและผลลัพธ์
+    widget.controller.clear();
+    UserData().premiumController.clear();
+
+    // อัปเดตข้อความโหมดตรงข้าม
+    _ShowmodeController.text =
+        selectedOption == "ทุนประกัน" ? "เบี้ยประกัน" : "ทุนประกัน";
+  });
 }
 
-
-
-  void updateDropdown1(String? value) {
-    setState(() {
-      if (value == selectedOption2) {
-        selectedOption2 = selectedOption1;
-      }
-      selectedOption1 = value;
-    });
-  }
-
-  void updateDropdown2(String? value) {
-    setState(() {
-      if (value == selectedOption1) {
-        selectedOption1 = selectedOption2;
-      }
-      selectedOption2 = value;
-    });
-  }
 
   @override
   void dispose() {
     // อย่าลืมลบ Listener เมื่อ State ถูกทำลาย
     widget.controller.removeListener(_updatePremiumAmount);
     _ShowratesController.dispose();
+    _ShowmodeController.dispose();
     super.dispose();
   }
 
@@ -346,9 +355,9 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: selectedOption1,
+                value: selectedOption,
                 items: widget.options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
-                onChanged: updateDropdown1,
+                onChanged: updateDropdown,
               ),
             ),
             const SizedBox(width: 8),
@@ -371,15 +380,10 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
         Row(
           children: [
             Expanded(
-              child: DropdownButtonFormField<String>(
-                value: selectedOption2,
-                items: widget.options
-                    .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
-                    .toList(),
-                onChanged: (value) {
-                  updateDropdown2(value); // เปลี่ยนค่า dropdown
-                  
-                },
+              flex: 1,
+              child: TextField(
+                controller: _ShowmodeController,
+                readOnly: true,
               ),
             ),
             const SizedBox(width: 8),
@@ -389,7 +393,6 @@ class _SelectableDoubleDropdownState extends State<SelectableDoubleDropdown> {
                 controller: UserData().premiumController,
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: 'ค่าเบี้ยประกัน',
                   border: OutlineInputBorder(),
                 ),
               ),

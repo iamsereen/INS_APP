@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ins_application/Plan.dart';
@@ -10,6 +12,9 @@ import 'Export.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class FixedFormTab extends StatefulWidget {
   const FixedFormTab({Key? key}) : super(key: key);
@@ -95,6 +100,16 @@ void initState() {
     });
   });
 }
+
+bool _isIOS(BuildContext context) {
+    // ✅ รองรับทั้ง iOS และ Web โดยไม่ crash
+    if (kIsWeb) return false;
+    try {
+      return Platform.isIOS;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -272,14 +287,19 @@ void initState() {
                     plan: selectedPlan,
                   );
 
+                  Uint8List finalPdfBytes = pdfBytes;
+
+                  // ✅ Flatten เฉพาะ iOS/iPadOS เท่านั้น
+                  if (_isIOS(context)) {
+                    finalPdfBytes = await flattenPdf(pdfBytes);
+                    debugPrint('📄 Flattened PDF สำหรับ iOS Preview');
+                  }
+
+                  // ✅ แสดงพรีวิวเท่านั้น (ไม่แชร์ ไม่ดาวน์โหลด)
                   await Printing.layoutPdf(
-                    onLayout: (format) async => pdfBytes,
+                    onLayout: (format) async => finalPdfBytes,
                     name: 'insurance_summary.pdf',
                   );
-                  /*await Printing.sharePdf(
-                    bytes: pdfBytes,
-                    filename: 'insurance_summary.pdf',
-                  );*/
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black87,
@@ -309,4 +329,26 @@ void initState() {
     }
     super.dispose();
   }
+}
+
+
+Future<Uint8List> flattenPdf(Uint8List originalBytes) async {
+  final flattened = pw.Document();
+  int pageCount = 0;
+
+  await for (final page in Printing.raster(originalBytes, dpi: 144)) {
+    final image = pw.MemoryImage(await page.toPng());
+    flattened.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => pw.Center(
+          child: pw.Image(image, fit: pw.BoxFit.contain),
+        ),
+      ),
+    );
+    pageCount++;
+  }
+
+  debugPrint('✅ Flattened $pageCount pages for iOS compatibility');
+  return flattened.save();
 }
